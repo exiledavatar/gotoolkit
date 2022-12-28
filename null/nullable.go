@@ -44,10 +44,19 @@ func (n Nullable[T]) MarshalJSON() ([]byte, error) {
 }
 
 // TODO: write UnmarshalJSON
-// func (n *Nullable[T]) UnmarshalJSON(b []byte) error {
-
-// 	return nil
-// }
+func (n *Nullable[T]) UnmarshalJSON(b []byte) error {
+	var v T
+	var s string
+	switch err := json.Unmarshal(b, &s); {
+	case b == nil, err != nil, s == "null":
+		*n = Nullable[T]{V: v, Valid: false}
+		return nil
+	default:
+		err := json.Unmarshal(b, &v)
+		*n = New(v)
+		return err
+	}
+}
 
 // TODO: is there a general purpose scan function like json.Unmarshal?
 // func (n *Nullable[T]) Scan(src any) error {
@@ -67,16 +76,20 @@ func (n Nullable[T]) MarshalJSON() ([]byte, error) {
 // }
 
 func (n Nullable[T]) MarshalText() ([]byte, error) {
-	if !n.Valid {
-		return []byte{}, nil
-	}
-	return []byte(fmt.Sprint(n.V)), nil
+	// if !n.Valid {
+	// 	return []byte{}, nil
+	// }
+	// if i, ok := (interface{}(n.V)).(encoding.TextMarshaler); ok {
+	// 	return i.MarshalText()
+	// }
+	// return []byte(fmt.Sprint(n.V)), nil
+	return n.MarshalJSON()
 }
 
 // TODO: is there a general purpose text unmarshaling function like json.Unmarshal
-// func (n *Nullable[T]) UnmarshalText(b []byte) error {
-// 	return nil
-// }
+func (n *Nullable[T]) UnmarshalText(b []byte) error {
+	return n.UnmarshalJSON(b)
+}
 
 // should probably leave gostring alone
 // func (n Nullable[T]) GoString() string {
