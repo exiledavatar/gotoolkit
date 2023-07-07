@@ -3,20 +3,21 @@ package meta
 import (
 	"reflect"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 // Field is a wrapper for reflect.StructField with some
 // additional functionality for tags, templating, etc.
 type Field struct {
-	Name         string
-	ForeignTypes map[string]any
-	ClientTypes  map[string]string // intended type for named client - eg "postgres": "numeric"
-	Attributes   map[string]string // catchall for additional attributes
+	Name       string
+	Attributes map[string]string // catchall for additional attributes
+	Parent     *Struct
+	Value
 	reflect.StructField
-	Value   reflect.Value
-	Parent  *Struct
-	pointer bool
-	Struct  Struct
+	// Struct
+	// ForeignTypes map[string]any
+	// ClientTypes  map[string]string // intended type for named client - eg "postgres": "numeric"
 }
 
 // type FieldConfig struct {
@@ -27,23 +28,25 @@ type Field struct {
 // 	RemoveExistingAttributes  bool
 // }
 
-func (f Field) IsStruct() bool {
-	return len(f.Struct.Fields) > 0
-}
+// func (f Field) IsStruct() bool {
+// 	return len(f.Struct.Fields) > 0
+// }
 
 // Pointer returns true if its reflect.Kind is a reflect.Pointer
 func (f Field) Pointer() bool {
-	return f.StructField.Type.Kind() == reflect.Pointer
+	// return f.StructField.Type.Kind() == reflect.Pointer
+	return f.Value.Pointer
 }
 
 // Kind returns the reflect.Kind. It will first dereference a pointer
 func (f Field) Kind() reflect.Kind {
-	switch sft := f.StructField.Type; {
-	case sft.Kind() == reflect.Pointer:
-		return sft.Elem().Kind()
-	default:
-		return sft.Kind()
-	}
+	// switch sft := f.StructField.Type; {
+	// case sft.Kind() == reflect.Pointer:
+	// 	return sft.Elem().Kind()
+	// default:
+	// 	return sft.Kind()
+	// }
+	return f.Value.Kind()
 }
 
 // Type returns the reflect.Type. It will first dereference a pointer
@@ -89,21 +92,21 @@ func (f Field) HasTagFalse(key string) bool {
 	return f.Tags().False(key)
 }
 
-func (f *Field) SetUUID(id string) {
-	if f.Struct.Name != "" {
-		f.Struct.SetUUID(id)
-	}
-}
+// func (f *Field) SetUUID(id string) {
+// 	if f.Struct.Name != "" {
+// 		f.Struct.SetUUID(id)
+// 	}
+// }
 
-func (f Field) ForeignType(target string) any {
-	if ft, ok := f.ForeignTypes[target]; ok {
-		return ft
-	}
-	if ft, ok := ForeignTypes[target]; ok {
-		return ft
-	}
-	return nil
-}
+// func (f Field) ForeignType(target string) any {
+// 	if ft, ok := f.ForeignTypes[target]; ok {
+// 		return ft
+// 	}
+// 	if ft, ok := ForeignTypes[target]; ok {
+// 		return ft
+// 	}
+// 	return nil
+// }
 
 // TaggedName returns the first value of the field's tag with the given key
 // if falls back to a lowercase version of the field's name
@@ -115,4 +118,32 @@ func (f Field) TaggedName(key string) string {
 		}
 	}
 	return strings.ToLower(f.Name)
+}
+
+// Struct returns a Struct and error, but does not guarantee it is useful
+func (f Field) Struct() (Struct, error) {
+	return ToStruct(f.Value)
+	// switch s, err := ToStruct(f.Value) ; {
+	// 	case len(s.Fields())
+	// }
+
+}
+
+// func (f Field) IsStruct() bool {
+// 	return false
+// }
+
+// MultiValued returns true for any 'collection' type or any struct with more than one field
+func (f Field) MultiValued() bool {
+	kind := f.Value.Kind()
+
+	switch {
+	case slices.Contains([]reflect.Kind{reflect.Slice, reflect.Array, reflect.Map, reflect.Chan}, kind):
+		return true
+	case kind == reflect.Struct && len(f.Value.Children()) > 1:
+		return true
+	default:
+		return false
+
+	}
 }

@@ -18,9 +18,13 @@ func ToValueMap(value any, tagKey string) ValueMap {
 	case Fields:
 		fields = v
 	case Struct:
-		fields = v.Fields
+		fields = v.Fields()
 	default:
-		fields = ToFields(v)
+		var err error
+		fields, err = ToFields(v)
+		if err != nil {
+			panic(err)
+		}
 	}
 	if len(fields) == 0 {
 		return nil
@@ -58,9 +62,13 @@ func NewValueMap(value any, tagKey, excludeValue, includeValue string) ValueMap 
 	case Fields:
 		fields = v
 	case Struct:
-		fields = v.Fields
+		fields = v.Fields()
 	default:
-		fields = ToFields(v)
+		var err error
+		fields, err = ToFields(v)
+		if err != nil {
+			panic(err)
+		}
 	}
 	if len(fields) == 0 {
 		return nil

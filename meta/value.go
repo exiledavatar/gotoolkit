@@ -92,7 +92,7 @@ func (v *Value) Children() []Value {
 			if fieldValue.Kind() == reflect.Invalid {
 				fieldValue = reflect.New(field.Type).Elem()
 			}
-			fmt.Println(field.Name, ":\t", fieldValue.Type())
+			// fmt.Println(field.Name, ":\t", fieldValue.Type())
 			child, err := ToValue(fieldValue.Interface())
 			if err != nil {
 				return children

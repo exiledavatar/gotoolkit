@@ -6,53 +6,38 @@ import (
 
 type Fields []Field
 
-// ToFields returns the exported fields of a struct, pointer to a struct,
-// reflect.Value of a struct, or reflect.Type of a struct
-func ToFields(value any) Fields {
-	var fields Fields
-
-	rv, rt, _ := ToIndirectReflectValue(value)
-	if !rv.IsValid() {
-		return fields
+func ToFields(value any) (Fields, error) {
+	// var fields Fields
+	fields, ok := value.(Fields)
+	if ok {
+		return fields, nil
 	}
 
-	if rt.Kind() != reflect.Struct {
-		return fields
+	s, err := ToStruct(value)
+	if err != nil {
+		return fields, err
 	}
 
-	sfs := reflect.VisibleFields(rt)
-	for _, sf := range sfs {
-		if !sf.IsExported() || sf.Anonymous {
+	var sfs []reflect.StructField
+	for _, sf := range reflect.VisibleFields(s.Type()) {
+		if sf.Anonymous || !sf.IsExported() {
 			continue
 		}
-		rfv, rft, rfPointer := ToIndirectReflectValue(rv.FieldByName(sf.Name))
+		sfs = append(sfs, sf)
+	}
 
-		switch {
-		case rfv.Kind() == reflect.Slice && rfv.Len() > 0:
-			// take rfv.Index(0)....
-		case rfv.Kind() == reflect.Slice && rfv.Len() < 1:
-			// ?rft.Elem()
-		case rfv.Kind() == reflect.Struct:
-			// use ToStruct as normal?
-		case rfv.Kind() == reflect.Map:
-			// use
-		}
-		// if rfv.Kind() == reflect.Slice {
-		// 	rfv.Elem()
-		// }
-		s, _ := ToStruct(rfv)
-
-		sf.Type = rft
+	for i, child := range s.Children() {
 		field := Field{
-			Name:        sf.Name,
-			StructField: sf,
-			Value:       rfv,
-			pointer:     rfPointer,
-			Struct:      s,
+			Name:        child.Name,
+			StructField: sfs[i],
+			Value:       child,
+			Parent:      &s,
 		}
 		fields = append(fields, field)
+
 	}
-	return fields
+
+	return fields, nil
 }
 
 // Tags returns a map of Tags with keys that match field names
@@ -152,8 +137,31 @@ func (f Fields) Types() []reflect.Type {
 	return types
 }
 
-func (f Fields) SetUUID(id string) {
-	for i, _ := range f {
-		f[i].SetUUID(id)
+func (f Fields) MultiValued() Fields {
+	var fields Fields
+	for _, field := range f {
+		if field.Value.Kind() == reflect.Struct && field.MultiValued() {
+			fields = append(fields, field)
+		}
 	}
+	return fields
 }
+
+// func (f Fields) SetUUID(id string) {
+// 	for i, _ := range f {
+// 		f[i].SetUUID(id)
+// 	}
+// }
+
+// func (f Fields) SetUUIDPrefix(id string) {
+// 	for i, _ := range f {
+// 		f[i].SetUUID(id)
+// 	}
+// }
+
+// func (f Fields) SetUUIDSuffix(suffix string) {
+// 	for i, _ := range f {
+// 		id := f[i].UUID
+// 		f[i].SetUUID()
+// 	}
+// }

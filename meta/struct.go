@@ -12,78 +12,51 @@ import (
 
 // Struct captures the properties of a struct and allows overriding properties using tags or by direct assignment
 type Struct struct {
-	Name               string
+	Name               string // default is type, single value children structs default to field name, slices default to type, maps default to key name
 	NameSpace          []string
-	NameSpaceSeparator string        // defaults to "."
-	Type               reflect.Type  // pointers will be de-referenced (indirected)
-	Value              reflect.Value // pointers will be de-referenced (indirected)
-	UUID               string
-	Attributes         map[string]string
-	Fields             Fields
-	Children           []Structs // fields that are slices of structs with more than one member
-	Tags               map[string][]string
-	Parent             *Struct
-	Container          reflect.Type // map, slice, or array Struct was 'wrapped' in, if applicable
-	// Data               any
-	pointer bool // is the original variable a pointer
+	NameSpaceSeparator string // defaults to "."
+	Value
+	UUID       string
+	Attributes map[string]string
+	Tags       map[string][]string
+	Parent     *Struct
 }
 
 func ToStruct(value any) (Struct, error) {
-	var s Struct
-	rv, rt, pointer := ToIndirectReflectValue(value)
-	if rt == nil {
-		return s, fmt.Errorf("invalid value: nil")
 
+	s, isStruct := value.(Struct)
+	if isStruct {
+		return s, nil
 	}
-	if rt.Kind() != reflect.Struct {
-		return s, fmt.Errorf("invalid type: (%s) %s", rt.Kind(), rt)
-	}
-	switch {
-	case rt == nil:
-		return s, fmt.Errorf("invalid value: %v", value)
-	case rt.Kind() == reflect.Invalid:
-		return s, fmt.Errorf("invalid value: Kind() == reflect.Invalid: %v", value)
-	case rt.Kind() == reflect.Map:
 
-	case rt.Kind() == reflect.Slice:
-	case rt.Kind() == reflect.Array:
-	case rt.Kind() == reflect.Chan:
-	case rt.Kind() != reflect.Struct:
-		return s, fmt.Errorf("invalid type: (%s) %s", rt.Kind(), rt)
-	}
-	s = Struct{
-		Name:       rt.Name(),
-		Type:       rt,
-		Value:      rv,
-		Attributes: nil,
-		Fields:     ToFields(value),
-		// Data:       value,
-		pointer: pointer,
-		// UUID:       strings.ReplaceAll(uuid.NewString(), "-", ""),
-	}
-	s.NewUUID()
-
-	for i, field := range s.Fields {
-		if len(field.Struct.Fields) > 0 {
-			s.Fields[i].Struct.Parent = &s
+	switch v, err := ToValue(value); {
+	case err != nil:
+		return s, err
+	case v.Kind() != reflect.Struct:
+		return s, fmt.Errorf("invalid (kind) type: (%s) %s", v.Kind(), v.Type())
+	default:
+		s = Struct{
+			Name:               v.Name,
+			NameSpaceSeparator: ".",
+			Value:              v,
+			UUID:               strings.ReplaceAll(uuid.NewString(), "-", ""),
 		}
+		return s, nil
 	}
-
-	return s, nil
 }
 
 func (s Struct) Childs() []Struct {
 	var ss []Struct
 
-	for i, field := range s.Fields {
-		if len(field.Struct.Fields) > 0 {
-			ss = append(ss, s.Fields[i].Struct)
-		}
-	}
+	// for i, field := range s.Fields {
+	// 	if len(field.Struct.Fields) > 0 {
+	// 		ss = append(ss, s.Fields[i].Struct)
+	// 	}
+	// }
 	return ss
 }
 
-// NewUUID creates a new UUID and set it recursively
+// NewUUID creates a new UUID and sets it recursively
 func (s *Struct) NewUUID() string {
 	id := strings.ReplaceAll(uuid.NewString(), "-", "")
 	s.SetUUID(id)
@@ -93,12 +66,12 @@ func (s *Struct) NewUUID() string {
 // SetUUID recursively sets s and its fields' struct UUID's to id
 func (s *Struct) SetUUID(id string) {
 	s.UUID = id
-	if s.Fields != nil {
-		s.Fields.SetUUID(id)
-	}
+	// if s.Fields != nil {
+	// 	s.Fields.SetUUID(id)
+	// }
 }
 
-type StructConfig struct {
+type Structconfig struct {
 	Name                     string
 	NameSpace                []string
 	NameSpaceSeparator       string // default is "."
@@ -110,8 +83,8 @@ type StructConfig struct {
 }
 
 // NewStruct enables configuration when parsing a struct to a Struct
-func NewStruct(a any, cfg StructConfig) (Struct, error) {
-	ds, err := ToStruct(a)
+func NewStruct(value any, cfg Structconfig) (Struct, error) {
+	ds, err := ToStruct(value)
 	if err != nil {
 		return ds, err
 	}
@@ -197,3 +170,40 @@ func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[str
 
 	return buf.String(), nil
 }
+
+func (s *Struct) Fields() Fields {
+	return nil
+}
+
+// func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) string {
+// 	var buf bytes.Buffer
+
+// 	if err := template.Must(template.
+// 		New(s.Name).
+// 		Option("missingkey=zero").
+// 		Funcs(FuncMap).
+// 		Funcs(funcs).
+// 		Parse(tpl)).
+// 		Execute(&buf, s); err != nil {
+// 		log.Println(err)
+// 		panic(err)
+// 	}
+// 	return buf.String()
+// }
+
+// func (s Struct) ExecuteTemplateWithData(tpl string, funcs template.FuncMap, data ...any) string {
+// 	data = append([]any{s}, data...)
+// 	var buf bytes.Buffer
+
+// 	if err := template.Must(template.
+// 		New("").
+// 		Option("missingkey=zero").
+// 		Funcs(FuncMap).
+// 		Funcs(funcs).
+// 		Parse(tpl)).
+// 		Execute(&buf, data); err != nil {
+// 		log.Println(err)
+// 		panic(err)
+// 	}
+// 	return buf.String()
+// }
