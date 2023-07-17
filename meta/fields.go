@@ -2,6 +2,8 @@ package meta
 
 import (
 	"reflect"
+
+	"golang.org/x/exp/slices"
 )
 
 type Fields []Field
@@ -137,10 +139,38 @@ func (f Fields) Types() []reflect.Type {
 	return types
 }
 
+func (f Fields) Kinds() []reflect.Kind {
+	var kinds []reflect.Kind
+	for _, field := range f {
+		kinds = append(kinds, field.Kind())
+	}
+	return kinds
+}
+
 func (f Fields) MultiValued() Fields {
 	var fields Fields
 	for _, field := range f {
-		if field.Value.Kind() == reflect.Struct && field.MultiValued() {
+		if field.MultiValued() {
+			fields = append(fields, field)
+		}
+	}
+	return fields
+}
+
+func (f Fields) ByTypes(types ...reflect.Type) Fields {
+	var fields Fields
+	for _, field := range f {
+		if slices.Contains(types, field.Type()) {
+			fields = append(fields, field)
+		}
+	}
+	return fields
+}
+
+func (f Fields) ByKind(kinds ...reflect.Kind) Fields {
+	var fields Fields
+	for _, field := range f {
+		if slices.Contains(kinds, field.Kind()) {
 			fields = append(fields, field)
 		}
 	}

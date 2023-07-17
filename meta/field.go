@@ -15,18 +15,7 @@ type Field struct {
 	Parent     *Struct
 	Value
 	reflect.StructField
-	// Struct
-	// ForeignTypes map[string]any
-	// ClientTypes  map[string]string // intended type for named client - eg "postgres": "numeric"
 }
-
-// type FieldConfig struct {
-// 	Name                      string
-// 	ClientTypes               map[string]string
-// 	RemoveExistingClientTypes bool
-// 	Attributes                map[string]string
-// 	RemoveExistingAttributes  bool
-// }
 
 // func (f Field) IsStruct() bool {
 // 	return len(f.Struct.Fields) > 0
@@ -40,12 +29,6 @@ func (f Field) Pointer() bool {
 
 // Kind returns the reflect.Kind. It will first dereference a pointer
 func (f Field) Kind() reflect.Kind {
-	// switch sft := f.StructField.Type; {
-	// case sft.Kind() == reflect.Pointer:
-	// 	return sft.Elem().Kind()
-	// default:
-	// 	return sft.Kind()
-	// }
 	return f.Value.Kind()
 }
 

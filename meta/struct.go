@@ -48,6 +48,8 @@ func ToStruct(value any) (Struct, error) {
 func (s Struct) Childs() []Struct {
 	var ss []Struct
 
+	
+
 	// for i, field := range s.Fields {
 	// 	if len(field.Struct.Fields) > 0 {
 	// 		ss = append(ss, s.Fields[i].Struct)
@@ -172,7 +174,14 @@ func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[str
 }
 
 func (s *Struct) Fields() Fields {
-	return nil
+	fields, err := ToFields(s)
+	if err != nil {
+		panic(err)
+	}
+	for i := range fields {
+		fields[i].Parent = s
+	}
+	return fields
 }
 
 // func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) string {

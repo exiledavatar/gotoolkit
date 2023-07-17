@@ -104,3 +104,43 @@ func TestToValue(t *testing.T) {
 		fmt.Println(chElem)
 	})
 }
+
+func TestX(t *testing.T) {
+	t.Run("X", func(t *testing.T) {
+		s, err := meta.ToStruct(structExample)
+		if err != nil {
+			log.Println(err)
+
+		}
+
+		fmt.Println(s.Fields.Names())
+		fmt.Println(s.Fields.Types())
+
+		for _, field := range s.Fields {
+			fmt.Println(field.Name, field.Type(), field.MultiValued())
+		}
+		// for k, child := range s.Children() {
+		// 	fmt.Printf("%v\t%v\n", k, child)
+
+		// }
+		// fmt.Println("\n------------------------------------------------------------------------------")
+		// vx, err := meta.ToValue(structExample)
+		// if err != nil {
+		// 	log.Println(err)
+		// }
+		// fmt.Println(vx)
+		// fmt.Println(vx.Children())
+		// fmt.Println("\n------------------------------------------------------------------------------")
+		// ch, err := vx.Child("ExampleStructSlice")
+		// if err != nil {
+		// 	log.Println(err)
+		// }
+		// fmt.Println("\n------------------------------------------------------------------------------")
+		// chElem, err := ch.NewElement()
+		// if err != nil {
+		// 	log.Println(err)
+		// }
+
+		// fmt.Println(chElem)
+	})
+}
