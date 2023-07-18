@@ -150,14 +150,14 @@ func (s Struct) ValueMap(tagKey string) ValueMap {
 // By default, it passes missingkey=zero, you can override this by changing TemplateOptions
 // See TemplateFuncMap for additional functions included by default.
 // See TemplateDataNames if you really need to change data map key names.
-func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[string]any) (string, error) {
-	d := map[string]any{
-		TemplateDataNames["Struct"]: s,
-	}
-	for k, v := range data {
-		d[k] = v
-	}
-
+func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) (string, error) {
+	// d := map[string]any{
+	// 	TemplateDataNames["Struct"]: s,
+	// }
+	// for k, v := range data {
+	// 	d[k] = v
+	// }
+	data := s
 	parsedTpl, err := template.
 		New("").
 		Option(TemplateOptions...).
@@ -169,12 +169,43 @@ func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[str
 	}
 
 	var buf bytes.Buffer
-	if err := parsedTpl.Execute(&buf, d); err != nil {
+	if err := parsedTpl.Execute(&buf, data); err != nil {
 		return "", err
 	}
 
 	return buf.String(), nil
 }
+
+// // ExecuteTemplate parses a string and executes it with any additional funcs and data. All data, including the reciever
+// // is passed to text/template as a map. By default, the reciever's map key is its type - eg {{ .Struct }} references a calling Struct.
+// // By default, it passes missingkey=zero, you can override this by changing TemplateOptions
+// // See TemplateFuncMap for additional functions included by default.
+// // See TemplateDataNames if you really need to change data map key names.
+// func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[string]any) (string, error) {
+// 	d := map[string]any{
+// 		TemplateDataNames["Struct"]: s,
+// 	}
+// 	for k, v := range data {
+// 		d[k] = v
+// 	}
+
+// 	parsedTpl, err := template.
+// 		New("").
+// 		Option(TemplateOptions...).
+// 		Funcs(TemplateFuncMap).
+// 		Funcs(funcs).
+// 		Parse(tpl)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	var buf bytes.Buffer
+// 	if err := parsedTpl.Execute(&buf, d); err != nil {
+// 		return "", err
+// 	}
+
+// 	return buf.String(), nil
+// }
 
 func (s *Struct) Fields() Fields {
 
