@@ -267,6 +267,36 @@ func (s Struct) Fields2() Fields {
 	return fields
 }
 
+func (s *Struct) Fields3() Fields {
+
+	sfs := reflect.VisibleFields(s.Value.Type())
+	sfmap := map[string]reflect.StructField{}
+	for _, sf := range sfs {
+		if sf.IsExported() && !sf.Anonymous {
+			sfmap[sf.Name] = sf
+		}
+	}
+
+	var fields Fields
+	for _, child := range s.Value.Children() {
+		field := Field{
+			Name:        child.Name,
+			Parent:      s,
+			Value:       child,
+			StructField: sfmap[child.Name],
+		}
+		fields = append(fields, field)
+	}
+	// fields, err := ToFields(s.Children())
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// for i := range fields {
+	// 	fields[i].Parent = s
+	// }
+	return fields
+}
+
 // func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) string {
 // 	var buf bytes.Buffer
 
