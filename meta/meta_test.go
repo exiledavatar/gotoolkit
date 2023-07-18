@@ -9,6 +9,17 @@ import (
 	"github.com/ericsgagnon/qgenda/pkg/meta"
 )
 
+type Struct0Fields struct{}
+
+type Struct1Fields struct {
+	One int
+}
+
+type Struct2Fields struct {
+	One int
+	Two int
+}
+
 type ExStruct struct {
 	Bool        bool
 	BoolPointer *bool
@@ -37,6 +48,10 @@ type ExampleStruct struct {
 	structPointer      *ExStruct        `vm:""`
 	ExampleStructSlice []ExampleStruct  `vm:""`
 	exampleStructSlice *[]ExampleStruct `vm:""`
+	Struct0Fields      Struct0Fields
+	Struct1Fields      Struct1Fields
+	Struct2Fields      Struct2Fields
+	ExStruct
 }
 
 var boolExample = true
@@ -90,6 +105,7 @@ var structExample = ExampleStruct{
 	structPointer:      &ExStruct{},
 	ExampleStructSlice: []ExampleStruct{},
 	exampleStructSlice: &[]ExampleStruct{},
+	ExStruct:           ExStruct{},
 }
 
 func TestToIndirectReflectValue(t *testing.T) {

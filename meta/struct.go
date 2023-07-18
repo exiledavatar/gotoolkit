@@ -3,6 +3,7 @@ package meta
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"text/template"
@@ -26,15 +27,19 @@ func ToStruct(value any) (Struct, error) {
 
 	s, isStruct := value.(Struct)
 	if isStruct {
+		log.Printf("%v is already a struct\n", value)
 		return s, nil
 	}
 
 	switch v, err := ToValue(value); {
 	case err != nil:
+		log.Println("ToValue err not nil")
 		return s, err
 	case v.Kind() != reflect.Struct:
+		log.Println("ToValue(value).Kind() != reflect.Struct")
 		return s, fmt.Errorf("invalid (kind) type: (%s) %s", v.Kind(), v.Type())
 	default:
+		log.Println("default, creating struct")
 		s = Struct{
 			Name:               v.Name,
 			NameSpaceSeparator: ".",
@@ -45,18 +50,16 @@ func ToStruct(value any) (Struct, error) {
 	}
 }
 
-func (s Struct) Childs() []Struct {
-	var ss []Struct
+// func (s Struct) Childs() []Struct {
+// 	var ss []Struct
 
-	
-
-	// for i, field := range s.Fields {
-	// 	if len(field.Struct.Fields) > 0 {
-	// 		ss = append(ss, s.Fields[i].Struct)
-	// 	}
-	// }
-	return ss
-}
+// 	// for i, field := range s.Fields {
+// 	// 	if len(field.Struct.Fields) > 0 {
+// 	// 		ss = append(ss, s.Fields[i].Struct)
+// 	// 	}
+// 	// }
+// 	return ss
+// }
 
 // NewUUID creates a new UUID and sets it recursively
 func (s *Struct) NewUUID() string {
@@ -174,13 +177,32 @@ func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[str
 }
 
 func (s *Struct) Fields() Fields {
-	fields, err := ToFields(s)
-	if err != nil {
-		panic(err)
+
+	sfs := reflect.VisibleFields(s.Value.Type())
+	sfmap := map[string]reflect.StructField{}
+	for _, sf := range sfs {
+		if sf.IsExported() && !sf.Anonymous {
+			sfmap[sf.Name] = sf
+		}
 	}
-	for i := range fields {
-		fields[i].Parent = s
+
+	var fields Fields
+	for _, child := range s.Value.Children() {
+		field := Field{
+			Name:        child.Name,
+			Parent:      s,
+			Value:       child,
+			StructField: sfmap[child.Name],
+		}
+		fields = append(fields, field)
 	}
+	// fields, err := ToFields(s.Children())
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// for i := range fields {
+	// 	fields[i].Parent = s
+	// }
 	return fields
 }
 

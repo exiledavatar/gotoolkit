@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/ericsgagnon/qgenda/pkg/meta"
+	"github.com/exiledavatar/gotoolkit/meta"
 )
 
 // func TestZZZToMeta(t *testing.T) {
@@ -113,12 +113,13 @@ func TestX(t *testing.T) {
 
 		}
 
-		fmt.Println(s.Fields.Names())
-		fmt.Println(s.Fields.Types())
-
-		for _, field := range s.Fields {
-			fmt.Println(field.Name, field.Type(), field.MultiValued())
+		for _, child := range s.Fields() {
+			fmt.Printf("%s\t%s\t%v\t\t\n", child.Name, child.Type(), child.Tags())
 		}
+		// for _, field := range ss.Fields() {
+		// 	fmt.Println(field.Name, field.Type(), field.MultiValued())
+		// }
+
 		// for k, child := range s.Children() {
 		// 	fmt.Printf("%v\t%v\n", k, child)
 

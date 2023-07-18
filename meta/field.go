@@ -34,11 +34,14 @@ func (f Field) Kind() reflect.Kind {
 
 // Type returns the reflect.Type. It will first dereference a pointer
 func (f Field) Type() reflect.Type {
-	ft := f.StructField.Type
-	if ft.Kind() == reflect.Pointer {
+	switch ft := f.StructField.Type; {
+	case ft == nil:
+		return reflect.TypeOf(nil)
+	case ft.Kind() == reflect.Pointer:
 		return ft.Elem()
+	default:
+		return ft
 	}
-	return ft
 }
 
 // ElementType returns the type of an element of a map or slice

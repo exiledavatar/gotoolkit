@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"log"
 	"reflect"
 
 	"golang.org/x/exp/slices"
@@ -12,11 +13,13 @@ func ToFields(value any) (Fields, error) {
 	// var fields Fields
 	fields, ok := value.(Fields)
 	if ok {
+		log.Println("already Fields")
 		return fields, nil
 	}
 
 	s, err := ToStruct(value)
 	if err != nil {
+		log.Println("ToFields - ToStruct err not nil")
 		return fields, err
 	}
 
@@ -35,6 +38,7 @@ func ToFields(value any) (Fields, error) {
 			Value:       child,
 			Parent:      &s,
 		}
+		log.Println("ToFields 44: ", child)
 		fields = append(fields, field)
 
 	}
