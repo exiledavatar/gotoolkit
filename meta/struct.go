@@ -194,7 +194,6 @@ func (s *Struct) Fields() Fields {
 			Value:       child,
 			StructField: sfmap[child.Name],
 		}
-		log.Println(field)
 		fields = append(fields, field)
 	}
 	// fields, err := ToFields(s.Children())
