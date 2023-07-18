@@ -150,7 +150,7 @@ func (s Struct) ValueMap(tagKey string) ValueMap {
 // By default, it passes missingkey=zero, you can override this by changing TemplateOptions
 // See TemplateFuncMap for additional functions included by default.
 // See TemplateDataNames if you really need to change data map key names.
-func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) (string, error) {
+func (s *Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) (string, error) {
 	// d := map[string]any{
 	// 	TemplateDataNames["Struct"]: s,
 	// }
