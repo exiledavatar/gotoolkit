@@ -150,14 +150,14 @@ func (s Struct) ValueMap(tagKey string) ValueMap {
 // By default, it passes missingkey=zero, you can override this by changing TemplateOptions
 // See TemplateFuncMap for additional functions included by default.
 // See TemplateDataNames if you really need to change data map key names.
-func (s *Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) (string, error) {
-	// d := map[string]any{
-	// 	TemplateDataNames["Struct"]: s,
-	// }
-	// for k, v := range data {
-	// 	d[k] = v
-	// }
-	data := s
+func (s *Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[string]any) (string, error) {
+	d := map[string]any{
+		TemplateDataNames["Struct"]: s,
+	}
+	for k, v := range data {
+		d[k] = v
+	}
+
 	parsedTpl, err := template.
 		New("").
 		Option(TemplateOptions...).
@@ -169,7 +169,7 @@ func (s *Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) (string, er
 	}
 
 	var buf bytes.Buffer
-	if err := parsedTpl.Execute(&buf, data); err != nil {
+	if err := parsedTpl.Execute(&buf, d); err != nil {
 		return "", err
 	}
 
@@ -208,66 +208,6 @@ func (s *Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) (string, er
 // }
 
 func (s *Struct) Fields() Fields {
-
-	sfs := reflect.VisibleFields(s.Value.Type())
-	sfmap := map[string]reflect.StructField{}
-	for _, sf := range sfs {
-		if sf.IsExported() && !sf.Anonymous {
-			sfmap[sf.Name] = sf
-		}
-	}
-
-	var fields Fields
-	for _, child := range s.Value.Children() {
-		field := Field{
-			Name:        child.Name,
-			Parent:      s,
-			Value:       child,
-			StructField: sfmap[child.Name],
-		}
-		fields = append(fields, field)
-	}
-	// fields, err := ToFields(s.Children())
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// for i := range fields {
-	// 	fields[i].Parent = s
-	// }
-	return fields
-}
-
-func (s Struct) Fields2() Fields {
-
-	sfs := reflect.VisibleFields(s.Value.Type())
-	sfmap := map[string]reflect.StructField{}
-	for _, sf := range sfs {
-		if sf.IsExported() && !sf.Anonymous {
-			sfmap[sf.Name] = sf
-		}
-	}
-
-	var fields Fields
-	for _, child := range s.Value.Children() {
-		field := Field{
-			Name:        child.Name,
-			Parent:      &s,
-			Value:       child,
-			StructField: sfmap[child.Name],
-		}
-		fields = append(fields, field)
-	}
-	// fields, err := ToFields(s.Children())
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// for i := range fields {
-	// 	fields[i].Parent = s
-	// }
-	return fields
-}
-
-func (s *Struct) Fields3() Fields {
 
 	sfs := reflect.VisibleFields(s.Value.Type())
 	sfmap := map[string]reflect.StructField{}
