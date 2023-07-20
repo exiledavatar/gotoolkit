@@ -78,6 +78,22 @@ func (f Field) HasTagFalse(key string) bool {
 	return f.Tags().False(key)
 }
 
+// TagName returns the first tag value if the tag key exists and is not blank,
+// otherwise it returns Field.Name
+func (f Field) TagName(key string) string {
+	tag := f.Tags().Tag(key)
+	switch {
+	case tag == nil:
+		return f.Name
+	case tag.False():
+		return f.Name
+	case tag[0] != "":
+		return tag[0]
+	default:
+		return f.Name
+	}
+}
+
 // func (f *Field) SetUUID(id string) {
 // 	if f.Struct.Name != "" {
 // 		f.Struct.SetUUID(id)

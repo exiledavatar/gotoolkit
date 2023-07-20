@@ -23,27 +23,29 @@ func ToFields(value any) (Fields, error) {
 		return fields, err
 	}
 
-	var sfs []reflect.StructField
-	for _, sf := range reflect.VisibleFields(s.Type()) {
-		if sf.Anonymous || !sf.IsExported() {
-			continue
-		}
-		sfs = append(sfs, sf)
-	}
+	return s.Fields(), nil
 
-	for i, child := range s.Children() {
-		field := Field{
-			Name:        child.Name,
-			StructField: sfs[i],
-			Value:       child,
-			Parent:      &s,
-		}
-		log.Println("ToFields 44: ", child)
-		fields = append(fields, field)
+	// var sfs []reflect.StructField
+	// for _, sf := range reflect.VisibleFields(s.Type()) {
+	// 	if sf.Anonymous || !sf.IsExported() {
+	// 		continue
+	// 	}
+	// 	sfs = append(sfs, sf)
+	// }
 
-	}
+	// for i, child := range s.Children() {
+	// 	field := Field{
+	// 		Name:        child.Name,
+	// 		StructField: sfs[i],
+	// 		Value:       child,
+	// 		Parent:      &s,
+	// 	}
+	// 	log.Println("ToFields 44: ", child)
+	// 	fields = append(fields, field)
 
-	return fields, nil
+	// }
+
+	// return fields, nil
 }
 
 // Tags returns a map of Tags with keys that match field names
@@ -130,6 +132,15 @@ func (f Fields) Names() []string {
 	names := []string{}
 	for _, field := range f {
 		names = append(names, field.Name)
+	}
+	return names
+}
+
+// TagNames returns a slice of the field names according to field.TagName
+func (f Fields) TagNames(key string) []string {
+	names := []string{}
+	for _, field := range f {
+		names = append(names, field.TagName(key))
 	}
 	return names
 }
