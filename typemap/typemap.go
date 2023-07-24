@@ -4,7 +4,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ericsgagnon/qgenda/pkg/meta"
+	// "github.com/ericsgagnon/qgenda/pkg/meta"
+	"github.com/exiledavatar/gotoolkit/meta"
 )
 
 // default type maps between go and other systems
@@ -25,7 +26,11 @@ type Map struct {
 // ToType indirects any value and returns the external type as a string,
 // if it exists in the To typemap
 func (m Map) ToType(value any) string {
-	return m.To[meta.IndirectReflectValue(value).Type()]
+	t, err := meta.ToValue(value)
+	if err != nil {
+		panic(err)
+	}
+	return m.To[t.Type()]
 }
 
 // FromType takes the external type and returns the reflect.Type,
@@ -63,18 +68,18 @@ var Postgres = Map{
 		"bigint":   reflect.TypeOf(int(1)),
 	},
 	To: To{
-		reflect.TypeOf("string"):     "text",
-		reflect.TypeOf(true):         "boolean",
-		reflect.TypeOf(int(1)):       "bigint",
-		reflect.TypeOf(int8(1)):      "smallint",
-		reflect.TypeOf(int16(1)):     "smallint",
-		reflect.TypeOf(int32(1)):     "bigint",
-		reflect.TypeOf(int64(1)):     "bigint",
-		reflect.TypeOf(float32(1.0)): "float4",
-		reflect.TypeOf(float64(1.0)): "float8",
-		reflect.TypeOf(time.Time{}):  "timestamp with time zone",
-		reflect.TypeOf([]byte{}):     "bytea[]",
-		nil:                          "bytea[]", // serves as a default
+		reflect.TypeOf(string("string")): "text",
+		reflect.TypeOf(bool(true)):       "boolean",
+		reflect.TypeOf(int(1)):           "bigint",
+		reflect.TypeOf(int8(1)):          "smallint",
+		reflect.TypeOf(int16(1)):         "smallint",
+		reflect.TypeOf(int32(1)):         "bigint",
+		reflect.TypeOf(int64(1)):         "bigint",
+		reflect.TypeOf(float32(1.0)):     "float4",
+		reflect.TypeOf(float64(1.0)):     "float8",
+		reflect.TypeOf(time.Time{}):      "timestamp with time zone",
+		reflect.TypeOf([]byte{}):         "bytea[]",
+		nil:                              "bytea[]", // serves as a default
 	},
 }
 
