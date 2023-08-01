@@ -81,8 +81,7 @@ func (f Field) HasTagFalse(key string) bool {
 // TagName returns the first tag value if the tag key exists and is not blank,
 // otherwise it returns Field.Name
 func (f Field) TagName(key string) string {
-	tag := f.Tags().Tag(key)
-	switch {
+	switch tag := f.Tags().Tag(key); {
 	case tag == nil:
 		return f.Name
 	case tag.False():
@@ -92,6 +91,10 @@ func (f Field) TagName(key string) string {
 	default:
 		return f.Name
 	}
+}
+
+func (f Field) Tag(key string) Tag {
+	return f.Tags().Tag(key)
 }
 
 // func (f *Field) SetUUID(id string) {

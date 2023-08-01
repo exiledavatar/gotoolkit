@@ -116,6 +116,19 @@ func TestX(t *testing.T) {
 		for _, child := range s.Fields() {
 			fmt.Printf("%s\t%s\t%v\t\t\n", child.Name, child.Type(), child.Tags())
 		}
+
+		fmt.Println("TypeMaps:---------------------------------------------------")
+		for _, child := range s.Fields() {
+
+			fmt.Printf("%s\t%s\t%s\t%s\n", child.Name, child.TypeMap("postgres"), child.Type(), child.Kind())
+		}
+
+		// fmt.Println(meta.TypeMappings)
+		// v, err := meta.ToValue(structExample)
+		// if err != nil {
+		// 	log.Println(err)
+		// }
+		// fmt.Println(v.)
 		// for _, field := range ss.Fields() {
 		// 	fmt.Println(field.Name, field.Type(), field.MultiValued())
 		// }

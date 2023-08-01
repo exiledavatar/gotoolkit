@@ -46,6 +46,10 @@ func (v Value) Valid() bool {
 	return v.Value.IsValid()
 }
 
+func (v Value) TypeMap(system string) string {
+	return TypeMappings.To(system, v.Interface())
+}
+
 // Children returns the elements of slices, arrays, and maps, and the non-anonymous, exported fields of structs
 // if it can be considered a 'child' in some way, it should be returned by this method
 func (v *Value) Children() []Value {

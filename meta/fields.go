@@ -182,7 +182,7 @@ func (f Fields) ByTypes(types ...reflect.Type) Fields {
 	return fields
 }
 
-func (f Fields) ByKind(kinds ...reflect.Kind) Fields {
+func (f Fields) ByKinds(kinds ...reflect.Kind) Fields {
 	var fields Fields
 	for _, field := range f {
 		if slices.Contains(kinds, field.Kind()) {
@@ -190,6 +190,29 @@ func (f Fields) ByKind(kinds ...reflect.Kind) Fields {
 		}
 	}
 	return fields
+}
+
+// // Tag returns a slice of the first Tag value for the given key
+// func (f Fields) Tag(key string) Tag {
+// 	return f.Tags().Tag(key)
+// 	var values []string
+// 	for _, field := range f {
+// 		if tag := field.Tags().Tag(key); tag != nil {
+// 			values = append(values, tag[0])
+// 		}
+// 	}
+// 	return values
+// }
+
+// FirstTagValues returns a slice of the first Tag value for the given key
+func (f Fields) FirstTagValues(key string) []string {
+	var values []string
+	for _, field := range f {
+		if tag := field.Tags().Tag(key); tag != nil {
+			values = append(values, tag[0])
+		}
+	}
+	return values
 }
 
 // func (f Fields) SetUUID(id string) {
