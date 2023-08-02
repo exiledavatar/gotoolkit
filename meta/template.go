@@ -13,7 +13,7 @@ import (
 // by text/template: https://pkg.go.dev/text/template#hdr-Functions
 var TemplateFuncMap = template.FuncMap{
 	"join":       join, // wraps strings.Join but reorders arguments to work with template piping
-	"joinslices": joinSlices,
+	"joinslices": JoinSlices,
 	"mapkeys":    mapKeys,
 	"mapvalues":  mapValues,
 	"tostrings":  toStrings,
@@ -49,11 +49,12 @@ func toSlice(a any) []any {
 	return s
 }
 
+// join wraps strings.Join to enable pipelining in templates
 func join(sep string, s []string) string {
 	return strings.Join(s, sep)
 }
 
-func joinSlices(elementSep string, indexSep string, slices ...[]string) string {
+func JoinSlices(elementSep string, indexSep string, slices ...[]string) string {
 	// check for equal length slices
 	var lengths []int
 	ok := true
