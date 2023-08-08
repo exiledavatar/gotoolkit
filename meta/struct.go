@@ -13,9 +13,9 @@ import (
 
 // Struct captures the properties of a struct and allows overriding properties using tags or by direct assignment
 type Struct struct {
-	Name               string // default is type, single value children structs default to field name, slices default to type, maps default to key name
-	NameSpace          []string
-	NameSpaceSeparator string // defaults to "."
+	Name               string   // default is type (without package namespace), single value children structs default to field name, slices default to type, maps default to key name
+	NameSpace          []string // default is []string{"package"}
+	NameSpaceSeparator string   // defaults to "."
 	Value
 	UUID       string
 	Attributes map[string]string
@@ -40,8 +40,10 @@ func ToStruct(value any) (Struct, error) {
 		return s, fmt.Errorf("invalid (kind) type: (%s) %s", v.Kind(), v.Type())
 	default:
 		log.Println("default, creating struct")
+		pkgPath := strings.Split(v.Type().PkgPath(), "/")
 		s = Struct{
-			Name:               v.Name,
+			Name:               v.Type().Name(),
+			NameSpace:          []string{pkgPath[len(pkgPath)-1]},
 			NameSpaceSeparator: ".",
 			Value:              v,
 			UUID:               strings.ReplaceAll(uuid.NewString(), "-", ""),
