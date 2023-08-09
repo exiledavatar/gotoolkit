@@ -11,7 +11,7 @@ import (
 // additional functionality for tags, templating, etc.
 type Field struct {
 	Name       string
-	Attributes map[string]string // catchall for additional attributes
+	Attributes map[string]any //string // catchall for additional attributes
 	Parent     *Struct
 	Value
 	reflect.StructField
@@ -51,6 +51,20 @@ func (f Field) ElementType() reflect.Type {
 		return ft.Elem()
 	}
 	return nil
+}
+
+func (f Field) ElementToStruct() (Struct, error) {
+
+	s, err := NewStruct(f.Value, Structconfig{
+		Name:       f.Name,
+		NameSpace:  f.Parent.NameSpace,
+		Attributes: f.Attributes,
+		Tags:       f.Tags(), //any(f.Tags()).(map[string][]string),
+	})
+	if err != nil {
+		return s, err
+	}
+	return s, nil
 }
 
 // Tags returns the parsed struct field tags

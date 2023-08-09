@@ -17,8 +17,8 @@ type Struct struct {
 	NameSpaceSeparator string   // defaults to "."
 	Value
 	UUID       string
-	Attributes map[string]string
-	Tags       map[string][]string
+	Attributes map[string]any
+	Tags       Tags //map[string][]string
 	Parent     *Struct
 }
 
@@ -82,10 +82,11 @@ type Structconfig struct {
 	NameSpace                []string
 	NameSpaceSeparator       string // default is "."
 	UUID                     string
-	Tags                     map[string][]string // struct tags, not field tags, may optionally be parsed from tags labeled struct
-	RemoveExistingTags       bool                // remove existing tags - false will simply apopend any included tags to current ones
-	Attributes               map[string]string   // these should be table constraints, not field constraints
-	RemoveExistingAttributes bool                // remove existing constraints - false will simply apopend any included constraints to current ones
+	Tags                     Tags           // struct tags, not field tags, may optionally be parsed from tags labeled struct
+	RemoveExistingTags       bool           // remove existing tags - false will simply apopend any included tags to current ones
+	Attributes               map[string]any //string // these should be table constraints, not field constraints
+	RemoveExistingAttributes bool           // remove existing constraints - false will simply apopend any included constraints to current ones
+	// Tags                     map[string][]string // struct tags, not field tags, may optionally be parsed from tags labeled struct
 }
 
 // NewStruct enables configuration when parsing a struct to a Struct
