@@ -3,7 +3,6 @@ package meta
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"text/template"
@@ -27,19 +26,19 @@ func ToStruct(value any) (Struct, error) {
 
 	s, isStruct := value.(Struct)
 	if isStruct {
-		log.Printf("%v is already a struct\n", value)
+		// log.Printf("%v is already a struct\n", value)
 		return s, nil
 	}
 
 	switch v, err := ToValue(value); {
 	case err != nil:
-		log.Println("ToValue err not nil")
+		// log.Println("ToValue err not nil")
 		return s, err
 	case v.Kind() != reflect.Struct:
-		log.Println("ToValue(value).Kind() != reflect.Struct")
+		// log.Println("ToValue(value).Kind() != reflect.Struct")
 		return s, fmt.Errorf("invalid (kind) type: (%s) %s", v.Kind(), v.Type())
 	default:
-		log.Println("default, creating struct")
+		// log.Println("default, creating struct")
 		pkgPath := strings.Split(v.Type().PkgPath(), "/")
 		s = Struct{
 			Name:               v.Type().Name(),
