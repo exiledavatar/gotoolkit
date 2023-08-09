@@ -53,9 +53,11 @@ func (f Field) ElementType() reflect.Type {
 	return nil
 }
 
+// Converts the element of a Array, Chan, Map, Pointer, or Slice to
+// a Struct.
 func (f Field) ElementToStruct() (Struct, error) {
 
-	s, err := NewStruct(f.Value, Structconfig{
+	s, err := NewStruct(f.Value.Type().Elem(), Structconfig{
 		Name:       f.Name,
 		NameSpace:  f.Parent.NameSpace,
 		Attributes: f.Attributes,

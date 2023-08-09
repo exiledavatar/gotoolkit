@@ -86,6 +86,7 @@ type Structconfig struct {
 	RemoveExistingTags       bool           // remove existing tags - false will simply apopend any included tags to current ones
 	Attributes               map[string]any //string // these should be table constraints, not field constraints
 	RemoveExistingAttributes bool           // remove existing constraints - false will simply apopend any included constraints to current ones
+	Parent                   *Struct
 	// Tags                     map[string][]string // struct tags, not field tags, may optionally be parsed from tags labeled struct
 }
 
@@ -132,6 +133,9 @@ func NewStruct(value any, cfg Structconfig) (Struct, error) {
 		}
 	}
 
+	if cfg.Parent != nil {
+		ds.Parent = cfg.Parent
+	}
 	return ds, nil
 }
 
