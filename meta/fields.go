@@ -172,6 +172,18 @@ func (f Fields) MultiValued() Fields {
 	return fields
 }
 
+func (f Fields) ByNames(names ...string) Fields {
+	fieldNames := f.Names()
+	var fields Fields
+	for _, field := range f {
+		if slices.Contains(fieldNames, field.Name) {
+			fields = append(fields, field)
+		}
+	}
+	return fields
+
+}
+
 func (f Fields) ByTypes(types ...reflect.Type) Fields {
 	var fields Fields
 	for _, field := range f {
