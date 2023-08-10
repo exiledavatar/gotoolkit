@@ -1,8 +1,6 @@
 package meta
 
-import (
-	"reflect"
-)
+type Structs []Struct
 
 // types of fields:
 // single values
@@ -12,19 +10,17 @@ import (
 
 // type Structs []Struct
 
-// Structs represents a slice, array, map, or channel of Structs
-type Structs struct {
-	Name        string
-	Type        reflect.Type
-	Value       reflect.Value
-	Pointer     bool
-	IndexType   reflect.Type
-	ElementType reflect.Type
-	Index       any
-	Structs     []Struct
-}
-
-
+// // Structs represents a slice, array, map, or channel of Structs
+// type Structs struct {
+// 	Name        string
+// 	Type        reflect.Type
+// 	Value       reflect.Value
+// 	Pointer     bool
+// 	IndexType   reflect.Type
+// 	ElementType reflect.Type
+// 	Index       any
+// 	Structs     []Struct
+// }
 
 // func ToStructs(value any) (Structs, error) {
 // 	var s Structs

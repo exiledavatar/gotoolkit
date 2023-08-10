@@ -227,6 +227,18 @@ func (f Fields) FirstTagValues(key string) []string {
 	return values
 }
 
+// ElementsToStructs iterates through each field, attempts to convert it
+// to a Struct, and returns a slice of the valid Structs.
+func (f Fields) ElementsToStructs() Structs {
+	var s Structs
+	for _, field := range f {
+		if st, err := field.ElementToStruct(); err == nil {
+			s = append(s, st)
+		}
+	}
+	return s
+}
+
 // func (f Fields) SetUUID(id string) {
 // 	for i, _ := range f {
 // 		f[i].SetUUID(id)
