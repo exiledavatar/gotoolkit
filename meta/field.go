@@ -109,6 +109,20 @@ func (f Field) TagName(key string) string {
 	}
 }
 
+// Identifier uses the parent's Struct.Identifier and appends the field's
+// Name to it
+func (f Field) Identifier() string {
+	name := strings.ToLower(f.Name)
+	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + name
+}
+
+// TagIdentifier uses the parent's Struct.Identifier and appends the field's
+// Name to it
+func (f Field) TagIdentifier(key string) string {
+	name := strings.ToLower(f.TagName(key))
+	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + name
+}
+
 func (f Field) Tag(key string) Tag {
 	return f.Tags().Tag(key)
 }

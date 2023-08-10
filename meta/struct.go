@@ -139,8 +139,35 @@ func NewStruct(value any, cfg Structconfig) (Struct, error) {
 	return ds, nil
 }
 
+// TagName returns the first tag value if the tag key exists and is not blank,
+// otherwise it returns Struct.Name
+func (s Struct) TagName(key string) string {
+	switch tag := s.Tags.Tag(key); {
+	case tag == nil:
+		return s.Name
+	case tag.False():
+		return s.Name
+	case tag[0] != "":
+		return tag[0]
+	default:
+		return s.Name
+	}
+
+}
+
+// Identifier returns the full namespaced identifier of the struct
 func (s Struct) Identifier() string {
 	ids := append(s.NameSpace, s.Name)
+	for i, v := range ids {
+		ids[i] = strings.ToLower(v)
+	}
+	return strings.Join(ids, s.NameSpaceSeparator)
+}
+
+// Identifier returns the full namespaced identifier of the struct,
+// but uses TagName instead of Name
+func (s Struct) TagIdentifier(key string) string {
+	ids := append(s.NameSpace, s.TagName(key))
 	for i, v := range ids {
 		ids[i] = strings.ToLower(v)
 	}

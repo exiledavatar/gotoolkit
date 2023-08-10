@@ -145,6 +145,25 @@ func (f Fields) TagNames(key string) []string {
 	return names
 }
 
+// Identifiers returns a slice of the fully namespaced identifiers
+func (f Fields) Identifiers(key string) []string {
+	identifiers := []string{}
+	for _, field := range f {
+		identifiers = append(identifiers, field.Identifier())
+	}
+	return identifiers
+}
+
+// TagIdentifiers returns a slice of the fully namespaced identifiers
+// from TagIdentifier
+func (f Fields) TagIdentifiers(key string) []string {
+	identifiers := []string{}
+	for _, field := range f {
+		identifiers = append(identifiers, field.TagIdentifier(key))
+	}
+	return identifiers
+}
+
 // Types returns a slice of field types
 func (f Fields) Types() []reflect.Type {
 	types := []reflect.Type{}
