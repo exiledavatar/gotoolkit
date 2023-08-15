@@ -12,13 +12,40 @@ import (
 // TemplateFuncMap includes functions in addition to those already included
 // by text/template: https://pkg.go.dev/text/template#hdr-Functions
 var TemplateFuncMap = template.FuncMap{
-	"join":       join, // wraps strings.Join but reorders arguments to work with template piping
-	"joinslices": JoinSlices,
-	"mapkeys":    mapKeys,
-	"mapvalues":  mapValues,
-	"tostrings":  toStrings,
-	"toslice":    toSlice,
-	"tovaluemap": ToValueMap,
+	"join":          join, // wraps strings.Join but reorders arguments to work with template piping
+	"joinslices":    JoinSlices,
+	"mapkeys":       mapKeys,
+	"mapvalues":     mapValues,
+	"replace":       replace,
+	"replaceall":    replaceAll,
+	"tolower":       strings.ToLower,
+	"tolowerslices": toLowerSlices,
+	"toupper":       strings.ToUpper,
+	"toupperslices": toUpperSlices,
+	"tostrings":     toStrings,
+	"toslice":       toSlice,
+	"tovaluemap":    ToValueMap,
+}
+
+func replace(old string, new string, n int, s string) string {
+	return strings.Replace(s, old, new, n)
+}
+
+func replaceAll(old, new, s string) string {
+	return strings.ReplaceAll(s, old, new)
+}
+func toLowerSlices(s ...string) []string {
+	for i, v := range s {
+		s[i] = strings.ToLower(v)
+	}
+	return s
+}
+
+func toUpperSlices(s ...string) []string {
+	for i, v := range s {
+		s[i] = strings.ToUpper(v)
+	}
+	return s
 }
 
 func toStrings(s any) []string {
@@ -29,6 +56,8 @@ func toStrings(s any) []string {
 	}
 	return strings
 }
+
+
 
 func toSlice(a any) []any {
 	v := reflect.ValueOf(a)

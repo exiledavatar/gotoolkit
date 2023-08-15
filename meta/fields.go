@@ -137,10 +137,10 @@ func (f Fields) Names() []string {
 }
 
 // TagNames returns a slice of the field names according to field.TagName
-func (f Fields) TagNames(key string) []string {
+func (f Fields) TagNames(keys ...string) []string {
 	names := []string{}
 	for _, field := range f {
-		names = append(names, field.TagName(key))
+		names = append(names, field.TagName(keys...))
 	}
 	return names
 }
