@@ -30,17 +30,17 @@ type ExampleStruct struct {
 	boolValue          bool             `vm:""`
 	BoolPointer        *bool            `vm:"" json:"boolpointer,omitempty"`
 	boolPointer        *bool            `vm:""`
-	StringValue        string           `vm:""`
+	StringValue        string           `vm:"" db:"stringvalue"`
 	stringValue        string           `vm:""`
-	StringPointer      *string          `vm:""`
+	StringPointer      *string          `vm:"" db:"dbstringpointer" pg:"pgstringpointer" json:"jsonstringpointer"`
 	stringPointer      *string          `vm:""`
-	IntValue           int              `vm:""`
+	IntValue           int              `vm:"" db:"dbintvalue" pg:"pgintvalue"`
 	intValue           int              `vm:""`
-	IntPointer         *int             `vm:""`
+	IntPointer         *int             `vm:"" pg:"pgintpointer"`
 	intPointer         *int             `vm:""`
 	Bytes              []byte           `vm:""`
 	Map                map[string]any   `vm:""`
-	Slice              []any            `vm:""`
+	Slice              []any            `vm:"" db:"dbslice" pg:""`
 	slice              *[]any           `vm:""`
 	StructValue        ExStruct         `vm:""`
 	structValue        ExStruct         `vm:""`

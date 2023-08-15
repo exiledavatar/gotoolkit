@@ -123,6 +123,10 @@ func TestX(t *testing.T) {
 			fmt.Printf("%s\t%s\t%s\t%s\n", child.Name, child.TypeMap("postgres"), child.Type(), child.Kind())
 		}
 
+		for _, field := range s.Fields() {
+			fmt.Println(field.Name, field.TagName("json", "pg", "db"))
+		}
+
 		// fmt.Println(meta.TypeMappings)
 		// v, err := meta.ToValue(structExample)
 		// if err != nil {

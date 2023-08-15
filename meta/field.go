@@ -94,19 +94,36 @@ func (f Field) HasTagFalse(key string) bool {
 	return f.Tags().False(key)
 }
 
-// TagName returns the first tag value if the tag key exists and is not blank,
-// otherwise it returns Field.Name
-func (f Field) TagName(key string) string {
-	switch tag := f.Tags().Tag(key); {
-	case tag == nil:
-		return f.Name
-	case tag.False():
-		return f.Name
-	case tag[0] != "":
-		return tag[0]
-	default:
-		return f.Name
+// // TagName returns the first tag value if the tag key exists and is not blank,
+// // otherwise it returns Field.Name
+// func (f Field) TagName(key string) string {
+// 	switch tag := f.Tags().Tag(key); {
+// 	case tag == nil:
+// 		return f.Name
+// 	case tag.False():
+// 		return f.Name
+// 	case tag[0] != "":
+// 		return tag[0]
+// 	default:
+// 		return f.Name
+// 	}
+// }
+
+// TagName ranges through the provided keys in order and returns the first non-blank, non-false value, or field.Name if none are found.
+func (f Field) TagName(keys ...string) string {
+	name := f.Name
+	for _, key := range keys {
+		switch tag := f.Tags().Tag(key); {
+		case tag == nil || tag.False():
+			continue
+		case tag[0] != "":
+			return tag[0]
+		default:
+			// return f.Name
+		}
+
 	}
+	return name
 }
 
 // Identifier uses the parent's Struct.Identifier and appends the field's
