@@ -30,8 +30,8 @@ func (t Tag) NotContains(values ...string) bool {
 	return true
 }
 
-// Index is a wrapper for slices.Index that returns the index
-// of value in the tag, or -1 if not present
+// Index is a wrapper for slices.Index that returns the index of the
+// first value found in the tag, in order given, or -1 if not present
 func (t Tag) Index(values ...string) int {
 	var index int
 	for _, value := range values {

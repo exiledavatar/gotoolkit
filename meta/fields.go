@@ -36,11 +36,11 @@ func (f Fields) Tags() map[string]Tags {
 	return fieldsTagMap
 }
 
-// WithTag returns a subset of Fields with the key
-func (f Fields) WithTag(key string) Fields {
+// WithTag returns a subset of Fields with any of the given keys
+func (f Fields) WithTag(keys ...string) Fields {
 	fields := Fields{}
 	for _, field := range f {
-		if field.HasTag(key) {
+		if field.HasTag(keys...) {
 			fields = append(fields, field)
 		}
 	}
@@ -82,11 +82,11 @@ func (f Fields) WithTagFalse(key string) Fields {
 	return fields
 }
 
-// WithoutTag returns a subset of Fields that do not have the key
-func (f Fields) WithoutTag(key string) Fields {
+// WithoutTag returns a subset of Fields that do not have any of the given keys
+func (f Fields) WithoutTag(keys ...string) Fields {
 	fields := Fields{}
 	for _, field := range f {
-		if !field.HasTag(key) {
+		if !field.HasTag(keys...) {
 			fields = append(fields, field)
 		}
 	}
@@ -102,7 +102,6 @@ func (f Fields) WithoutTagValue(key, value string) Fields {
 			fields = append(fields, field)
 		}
 	}
-
 	return fields
 }
 
@@ -125,7 +124,7 @@ func (f Fields) TagNames(keys ...string) []string {
 }
 
 // Identifiers returns a slice of the fully namespaced identifiers
-func (f Fields) Identifiers(key string) []string {
+func (f Fields) Identifiers() []string {
 	identifiers := []string{}
 	for _, field := range f {
 		identifiers = append(identifiers, field.Identifier())
@@ -135,10 +134,10 @@ func (f Fields) Identifiers(key string) []string {
 
 // TagIdentifiers returns a slice of the fully namespaced identifiers
 // from TagIdentifier
-func (f Fields) TagIdentifiers(key string) []string {
+func (f Fields) TagIdentifiers(keys ...string) []string {
 	identifiers := []string{}
 	for _, field := range f {
-		identifiers = append(identifiers, field.TagIdentifier(key))
+		identifiers = append(identifiers, field.TagIdentifier(keys...))
 	}
 	return identifiers
 }
@@ -201,23 +200,23 @@ func (f Fields) ByKinds(kinds ...reflect.Kind) Fields {
 	return fields
 }
 
-// FirstTagValues returns a slice of the first Tag value for the given key
-func (f Fields) FirstTagValues(key string) []string {
-	var values []string
-	for _, field := range f {
-		if tag := field.Tags().Tag(key); tag != nil {
-			values = append(values, tag[0])
-		}
-	}
-	return values
-}
+// // FirstTagValues returns a slice of the first Tag value for the given key
+// func (f Fields) FirstTagValues(key string) []string {
+// 	var values []string
+// 	for _, field := range f {
+// 		if tag := field.Tags().Tag(key); tag != nil {
+// 			values = append(values, tag[0])
+// 		}
+// 	}
+// 	return values
+// }
 
 // ElementsToStructs iterates through each field, attempts to convert it
 // to a Struct, and returns a slice of the valid Structs.
-func (f Fields) ElementsToStructs() Structs {
+func (f Fields) ToStructs() Structs {
 	var s Structs
 	for _, field := range f {
-		if st, err := field.ElementToStruct(); err == nil {
+		if st, err := field.ToStruct(); err == nil {
 			s = append(s, st)
 		}
 	}

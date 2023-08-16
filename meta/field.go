@@ -2,7 +2,6 @@ package meta
 
 import (
 	"reflect"
-	"strings"
 
 	"golang.org/x/exp/slices"
 )
@@ -51,7 +50,7 @@ func (f Field) ElementType() reflect.Type {
 
 // Converts the element of a Array, Chan, Map, Pointer, or Slice to
 // a Struct.
-func (f Field) ElementToStruct() (Struct, error) {
+func (f Field) ToStruct() (Struct, error) {
 
 	s, err := NewStruct(f.Value.Type().Elem(), Structconfig{
 		Name:       f.Name,
@@ -70,9 +69,9 @@ func (f Field) Tags() Tags {
 	return ToTags(string(f.StructField.Tag))
 }
 
-// HasTag returns true if the tag key exists
-func (f Field) HasTag(key string) bool {
-	return f.Tags().Exists(key)
+// HasTag returns true any of the given tag keys exist
+func (f Field) HasTag(keys ...string) bool {
+	return f.Tags().Exists(keys...)
 }
 
 // HasTagValue returns true if it has both the key and value
@@ -92,55 +91,45 @@ func (f Field) HasTagFalse(key string) bool {
 
 // TagName ranges through the provided keys in order and returns the first non-blank, non-false value, or field.Name if none are found.
 func (f Field) TagName(keys ...string) string {
-	name := f.Name
 	for _, key := range keys {
-		switch tag := f.Tags().Tag(key); {
-		case tag == nil || tag.False():
-			continue
-		case tag[0] != "":
+		tag := f.Tags().Value(key)
+		if len(tag) > 0 && tag.True() && tag[0] != "" {
 			return tag[0]
-		default:
-			// return f.Name
 		}
-
 	}
-	return name
+	return f.Name
 }
 
 // Identifier uses the parent's Struct.Identifier and appends the field's
 // Name to it
 func (f Field) Identifier() string {
-	name := strings.ToLower(f.Name)
-	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + name
+	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + f.Name
 }
 
 // TagIdentifier uses the parent's Struct.Identifier and appends the field's
 // Name to it
 func (f Field) TagIdentifier(keys ...string) string {
-	name := strings.ToLower(f.TagName(keys...))
-	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + name
+	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + f.TagName(keys...)
 }
 
+// Tag returns the tag for the given key, according to Tags.Tag
 func (f Field) Tag(key string) Tag {
 	return f.Tags().Tag(key)
 }
 
-// TaggedName returns the first value of the field's tag with the given key
-// if falls back to a lowercase version of the field's name
-func (f Field) TaggedName(key string) string {
-	if f.HasTagTrue(key) {
-		name := f.Tags()[key][0]
-		if name != "" {
-			return name
-		}
-	}
-	return strings.ToLower(f.Name)
-}
+// // TaggedName returns the first value of the field's tag with the given key
+// // or field.Name if none are found
+// func (f Field) TaggedName(keys ...string) string {
+// 	if tag := f.Tags().Value(keys...); len(tag) > 0 {
+// 		return tag[0]
+// 	}
+// 	return f.Name
+// }
 
-// Struct returns a Struct and error, but does not guarantee it is useful
-func (f Field) Struct() (Struct, error) {
-	return ToStruct(f.Value)
-}
+// // Struct returns a Struct and error, but does not guarantee it is useful
+// func (f Field) Struct() (Struct, error) {
+// 	return ToStruct(f.Value)
+// }
 
 // MultiValued returns true for any 'collection' type or any struct with more than one field
 func (f Field) MultiValued() bool {

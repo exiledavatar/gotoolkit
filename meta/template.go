@@ -57,8 +57,7 @@ func toStrings(s any) []string {
 	return strings
 }
 
-
-
+// toSlice is intended to explicity convert a slice to a slice of type any
 func toSlice(a any) []any {
 	v := reflect.ValueOf(a)
 	var s []any

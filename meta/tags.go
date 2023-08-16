@@ -22,8 +22,18 @@ func ToTags(s string) Tags {
 // Value returns the parsed Tag for the first key found, in order given, or nil if missing
 func (t Tags) Value(keys ...string) Tag {
 	for _, key := range keys {
-		if value, ok := t[key]; ok {
-			return value
+		if tag, ok := t[key]; ok && tag.True() {
+			return tag
+		}
+	}
+	return nil
+}
+
+// NonEmptyValue returns the parsed Tag for the first key found, in order given, or nil if missing
+func (t Tags) NonEmptyValue(keys ...string) Tag {
+	for _, key := range keys {
+		if tag, ok := t[key]; ok && tag.True() && tag[0] != "" {
+			return tag
 		}
 	}
 	return nil
@@ -61,10 +71,15 @@ func (t Tags) True(key string) bool {
 	return false
 }
 
-// Exists returns true if the tag with key exists, even if it is empty
-func (t Tags) Exists(key string) bool {
-	tag, ok := t[key]
-	return ok && tag != nil
+// Exists returns true if a tag with any of the given keys exists,
+// even if it is empty
+func (t Tags) Exists(keys ...string) bool {
+	for _, key := range keys {
+		if tag, ok := t[key]; ok && tag != nil {
+			return true
+		}
+	}
+	return false
 }
 
 // Contains returns true if the tag with key has the value,
@@ -85,7 +100,6 @@ func (t Tags) NotContains(key, value string) bool {
 }
 
 // Tag returns the tag for key, or nil if it is missing
-// note: it is the same as Value
 func (t Tags) Tag(key string) Tag {
 	if tag, ok := t[key]; ok {
 		return tag

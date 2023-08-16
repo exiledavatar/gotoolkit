@@ -51,17 +51,6 @@ func ToStruct(value any) (Struct, error) {
 	}
 }
 
-// func (s Struct) Childs() []Struct {
-// 	var ss []Struct
-
-// 	// for i, field := range s.Fields {
-// 	// 	if len(field.Struct.Fields) > 0 {
-// 	// 		ss = append(ss, s.Fields[i].Struct)
-// 	// 	}
-// 	// }
-// 	return ss
-// }
-
 // NewUUID creates a new UUID and sets it recursively
 func (s *Struct) NewUUID() string {
 	id := strings.ReplaceAll(uuid.NewString(), "-", "")
@@ -168,11 +157,8 @@ func (s Struct) Identifier() string {
 
 // Identifier returns the full namespaced identifier of the struct,
 // but uses TagName instead of Name
-func (s Struct) TagIdentifier(key string) string {
-	ids := append(s.NameSpace, s.TagName(key))
-	for i, v := range ids {
-		ids[i] = strings.ToLower(v)
-	}
+func (s Struct) TagIdentifier(keys ...string) string {
+	ids := append(s.NameSpace, s.TagName(keys...))
 	return strings.Join(ids, s.NameSpaceSeparator)
 }
 
@@ -211,37 +197,6 @@ func (s *Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[st
 	return buf.String(), nil
 }
 
-// // ExecuteTemplate parses a string and executes it with any additional funcs and data. All data, including the reciever
-// // is passed to text/template as a map. By default, the reciever's map key is its type - eg {{ .Struct }} references a calling Struct.
-// // By default, it passes missingkey=zero, you can override this by changing TemplateOptions
-// // See TemplateFuncMap for additional functions included by default.
-// // See TemplateDataNames if you really need to change data map key names.
-// func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[string]any) (string, error) {
-// 	d := map[string]any{
-// 		TemplateDataNames["Struct"]: s,
-// 	}
-// 	for k, v := range data {
-// 		d[k] = v
-// 	}
-
-// 	parsedTpl, err := template.
-// 		New("").
-// 		Option(TemplateOptions...).
-// 		Funcs(TemplateFuncMap).
-// 		Funcs(funcs).
-// 		Parse(tpl)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	var buf bytes.Buffer
-// 	if err := parsedTpl.Execute(&buf, d); err != nil {
-// 		return "", err
-// 	}
-
-// 	return buf.String(), nil
-// }
-
 func (s *Struct) Fields() Fields {
 
 	sfs := reflect.VisibleFields(s.Value.Type())
@@ -262,45 +217,5 @@ func (s *Struct) Fields() Fields {
 		}
 		fields = append(fields, field)
 	}
-	// fields, err := ToFields(s.Children())
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// for i := range fields {
-	// 	fields[i].Parent = s
-	// }
 	return fields
 }
-
-// func (s Struct) ExecuteTemplate(tpl string, funcs template.FuncMap) string {
-// 	var buf bytes.Buffer
-
-// 	if err := template.Must(template.
-// 		New(s.Name).
-// 		Option("missingkey=zero").
-// 		Funcs(FuncMap).
-// 		Funcs(funcs).
-// 		Parse(tpl)).
-// 		Execute(&buf, s); err != nil {
-// 		log.Println(err)
-// 		panic(err)
-// 	}
-// 	return buf.String()
-// }
-
-// func (s Struct) ExecuteTemplateWithData(tpl string, funcs template.FuncMap, data ...any) string {
-// 	data = append([]any{s}, data...)
-// 	var buf bytes.Buffer
-
-// 	if err := template.Must(template.
-// 		New("").
-// 		Option("missingkey=zero").
-// 		Funcs(FuncMap).
-// 		Funcs(funcs).
-// 		Parse(tpl)).
-// 		Execute(&buf, data); err != nil {
-// 		log.Println(err)
-// 		panic(err)
-// 	}
-// 	return buf.String()
-// }
