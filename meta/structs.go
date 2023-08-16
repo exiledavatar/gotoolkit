@@ -2,25 +2,29 @@ package meta
 
 type Structs []Struct
 
-// types of fields:
-// single values
-// collections of single values
-// single struct
-// collections of structs
+func (s Structs) TagName(keys ...string) []string {
+	var names []string
+	for _, str := range s {
+		names = append(names, str.TagName(keys...))
+	}
+	return names
+}
 
-// type Structs []Struct
+func (s Structs) Identifiers() []string {
+	var identifiers []string
+	for _, str := range s {
+		identifiers = append(identifiers, str.Identifier())
+	}
+	return identifiers
+}
 
-// // Structs represents a slice, array, map, or channel of Structs
-// type Structs struct {
-// 	Name        string
-// 	Type        reflect.Type
-// 	Value       reflect.Value
-// 	Pointer     bool
-// 	IndexType   reflect.Type
-// 	ElementType reflect.Type
-// 	Index       any
-// 	Structs     []Struct
-// }
+func (s Structs) ToStructMap() map[string]Struct {
+	structmap := map[string]Struct{}
+	for _, str := range s {
+		structmap[str.Name] = str
+	}
+	return structmap
+}
 
 // func ToStructs(value any) (Structs, error) {
 // 	var s Structs
@@ -181,3 +185,11 @@ type Structs []Struct
 // Handle child slices of structs
 // handle tags that indicate child/not child
 //
+// func (f Fields) SetUUID(id string) {
+// 	for i, _ := range f {
+// func (f Fields) SetUUIDSuffix(suffix string) {
+// 	for i, _ := range f {
+// 		id := f[i].UUID
+// 		f[i].SetUUID()
+// 	}
+// }

@@ -17,10 +17,6 @@ type Field struct {
 	reflect.StructField
 }
 
-// func (f Field) IsStruct() bool {
-// 	return len(f.Struct.Fields) > 0
-// }
-
 // Pointer returns true if its reflect.Kind is a reflect.Pointer
 func (f Field) Pointer() bool {
 	// return f.StructField.Type.Kind() == reflect.Pointer
@@ -94,21 +90,6 @@ func (f Field) HasTagFalse(key string) bool {
 	return f.Tags().False(key)
 }
 
-// // TagName returns the first tag value if the tag key exists and is not blank,
-// // otherwise it returns Field.Name
-// func (f Field) TagName(key string) string {
-// 	switch tag := f.Tags().Tag(key); {
-// 	case tag == nil:
-// 		return f.Name
-// 	case tag.False():
-// 		return f.Name
-// 	case tag[0] != "":
-// 		return tag[0]
-// 	default:
-// 		return f.Name
-// 	}
-// }
-
 // TagName ranges through the provided keys in order and returns the first non-blank, non-false value, or field.Name if none are found.
 func (f Field) TagName(keys ...string) string {
 	name := f.Name
@@ -135,30 +116,14 @@ func (f Field) Identifier() string {
 
 // TagIdentifier uses the parent's Struct.Identifier and appends the field's
 // Name to it
-func (f Field) TagIdentifier(key string) string {
-	name := strings.ToLower(f.TagName(key))
+func (f Field) TagIdentifier(keys ...string) string {
+	name := strings.ToLower(f.TagName(keys...))
 	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + name
 }
 
 func (f Field) Tag(key string) Tag {
 	return f.Tags().Tag(key)
 }
-
-// func (f *Field) SetUUID(id string) {
-// 	if f.Struct.Name != "" {
-// 		f.Struct.SetUUID(id)
-// 	}
-// }
-
-// func (f Field) ForeignType(target string) any {
-// 	if ft, ok := f.ForeignTypes[target]; ok {
-// 		return ft
-// 	}
-// 	if ft, ok := ForeignTypes[target]; ok {
-// 		return ft
-// 	}
-// 	return nil
-// }
 
 // TaggedName returns the first value of the field's tag with the given key
 // if falls back to a lowercase version of the field's name
@@ -175,21 +140,11 @@ func (f Field) TaggedName(key string) string {
 // Struct returns a Struct and error, but does not guarantee it is useful
 func (f Field) Struct() (Struct, error) {
 	return ToStruct(f.Value)
-	// switch s, err := ToStruct(f.Value) ; {
-	// 	case len(s.Fields())
-	// }
-
 }
-
-// func (f Field) IsStruct() bool {
-// 	return false
-// }
 
 // MultiValued returns true for any 'collection' type or any struct with more than one field
 func (f Field) MultiValued() bool {
-	kind := f.Value.Kind()
-
-	switch {
+	switch kind := f.Value.Kind(); {
 	case slices.Contains([]reflect.Kind{reflect.Slice, reflect.Array, reflect.Map, reflect.Chan}, kind):
 		return true
 	case kind == reflect.Struct && len(f.Value.Children()) > 1:

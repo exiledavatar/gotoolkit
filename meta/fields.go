@@ -25,27 +25,6 @@ func ToFields(value any) (Fields, error) {
 
 	return s.Fields(), nil
 
-	// var sfs []reflect.StructField
-	// for _, sf := range reflect.VisibleFields(s.Type()) {
-	// 	if sf.Anonymous || !sf.IsExported() {
-	// 		continue
-	// 	}
-	// 	sfs = append(sfs, sf)
-	// }
-
-	// for i, child := range s.Children() {
-	// 	field := Field{
-	// 		Name:        child.Name,
-	// 		StructField: sfs[i],
-	// 		Value:       child,
-	// 		Parent:      &s,
-	// 	}
-	// 	log.Println("ToFields 44: ", child)
-	// 	fields = append(fields, field)
-
-	// }
-
-	// return fields, nil
 }
 
 // Tags returns a map of Tags with keys that match field names
@@ -192,10 +171,9 @@ func (f Fields) MultiValued() Fields {
 }
 
 func (f Fields) ByNames(names ...string) Fields {
-	fieldNames := f.Names()
 	var fields Fields
 	for _, field := range f {
-		if slices.Contains(fieldNames, field.Name) {
+		if slices.Contains(names, field.Name) {
 			fields = append(fields, field)
 		}
 	}
@@ -223,18 +201,6 @@ func (f Fields) ByKinds(kinds ...reflect.Kind) Fields {
 	return fields
 }
 
-// // Tag returns a slice of the first Tag value for the given key
-// func (f Fields) Tag(key string) Tag {
-// 	return f.Tags().Tag(key)
-// 	var values []string
-// 	for _, field := range f {
-// 		if tag := field.Tags().Tag(key); tag != nil {
-// 			values = append(values, tag[0])
-// 		}
-// 	}
-// 	return values
-// }
-
 // FirstTagValues returns a slice of the first Tag value for the given key
 func (f Fields) FirstTagValues(key string) []string {
 	var values []string
@@ -257,22 +223,3 @@ func (f Fields) ElementsToStructs() Structs {
 	}
 	return s
 }
-
-// func (f Fields) SetUUID(id string) {
-// 	for i, _ := range f {
-// 		f[i].SetUUID(id)
-// 	}
-// }
-
-// func (f Fields) SetUUIDPrefix(id string) {
-// 	for i, _ := range f {
-// 		f[i].SetUUID(id)
-// 	}
-// }
-
-// func (f Fields) SetUUIDSuffix(suffix string) {
-// 	for i, _ := range f {
-// 		id := f[i].UUID
-// 		f[i].SetUUID()
-// 	}
-// }
