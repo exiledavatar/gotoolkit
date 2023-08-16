@@ -9,7 +9,7 @@ type Tag []string
 var ConfigTagFalse = []string{"-"}
 
 // Contains is a wrapper for slices.Contains that returns true if
-// the value is explicitly in the tag
+// the tag contains any of the given values
 func (t Tag) Contains(values ...string) bool {
 	for _, value := range values {
 		if slices.Contains(t, value) {
@@ -20,7 +20,7 @@ func (t Tag) Contains(values ...string) bool {
 }
 
 // NotContains is a wrapper for slices.Contains that returns true if
-// the value isn't in the tag
+// the tag doesn't contain any of the given values
 func (t Tag) NotContains(values ...string) bool {
 	for _, value := range values {
 		if slices.Contains(t, value) {

@@ -19,12 +19,28 @@ func ToTags(s string) Tags {
 	return tkv
 }
 
-// Value returns the parsed Tag for the given key, or nil if missing
-func (t Tags) Value(key string) Tag {
-	if value, ok := t[key]; ok {
-		return value
+// Value returns the parsed Tag for the first key found, in order given, or nil if missing
+func (t Tags) Value(keys ...string) Tag {
+	for _, key := range keys {
+		if value, ok := t[key]; ok {
+			return value
+		}
 	}
 	return nil
+}
+
+// ByKeys returns a subset of Tags with the given keys, or nil if none are found
+func (t Tags) ByKeys(keys ...string) Tags {
+	tags := Tags{}
+	for _, key := range keys {
+		if value, ok := t[key]; ok {
+			tags[key] = value
+		}
+	}
+	if len(tags) == 0 {
+		return nil
+	}
+	return tags
 }
 
 // False only returns true if the tags exists and the first value matches
