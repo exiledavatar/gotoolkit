@@ -117,14 +117,25 @@ func (f Field) Tag(key string) Tag {
 	return f.Tags().Tag(key)
 }
 
-// // TaggedName returns the first value of the field's tag with the given key
-// // or field.Name if none are found
-// func (f Field) TaggedName(keys ...string) string {
-// 	if tag := f.Tags().Value(keys...); len(tag) > 0 {
-// 		return tag[0]
-// 	}
-// 	return f.Name
-// }
+// TagValueAtIndex returns the first tag.True, non-blank value for keys in the given order.
+// If no match is found, it returns the empty string.
+func (f Field) TagValueAtIndex(index int, keys ...string) string {
+	for _, key := range keys {
+		tag := f.Tags().Value(key)
+		if len(tag) > 0 && tag.True() && tag[0] != "" {
+			return tag[0]
+		}
+	}
+	return f.Name
+}
+
+
+func (f Field) NonEmptyTagValue(keys ...string) string {
+	if tag := f.Tags().NonEmptyValue(keys...); len(tag) > 0 {
+		return tag[0]
+	}
+	return ""
+}
 
 // // Struct returns a Struct and error, but does not guarantee it is useful
 // func (f Field) Struct() (Struct, error) {

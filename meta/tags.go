@@ -20,6 +20,7 @@ func ToTags(s string) Tags {
 }
 
 // Value returns the parsed Tag for the first key found, in order given, or nil if missing
+// note: it is currently the same as Tags.Tag but may be changed to return the actual string value
 func (t Tags) Value(keys ...string) Tag {
 	for _, key := range keys {
 		if tag, ok := t[key]; ok && tag.True() {
@@ -29,10 +30,12 @@ func (t Tags) Value(keys ...string) Tag {
 	return nil
 }
 
-// NonEmptyValue returns the parsed Tag for the first key found, in order given, or nil if missing
+// NonEmptyValue returns the parsed Tag for the first key found, in order given,
+// where the tag is non-nil, non-empty, and satisfies tag.True.
+// It returns nil if no match is found.
 func (t Tags) NonEmptyValue(keys ...string) Tag {
 	for _, key := range keys {
-		if tag, ok := t[key]; ok && tag.True() && tag[0] != "" {
+		if tag, ok := t[key]; ok && len(tag) > 0 && tag.True() && tag[0] != "" {
 			return tag
 		}
 	}
@@ -100,9 +103,11 @@ func (t Tags) NotContains(key, value string) bool {
 }
 
 // Tag returns the tag for key, or nil if it is missing
-func (t Tags) Tag(key string) Tag {
-	if tag, ok := t[key]; ok {
-		return tag
+func (t Tags) Tag(keys ...string) Tag {
+	for _, key := range keys {
+		if tag, ok := t[key]; ok && tag.True() {
+			return tag
+		}
 	}
 	return nil
 }

@@ -43,6 +43,15 @@ func (t Tag) Index(values ...string) int {
 	return index
 }
 
+// AtIndex is a safe alternative to slice indexing. It returns empty string
+// if index is out of bounds or the tag doesn't satify Tag.True
+func (t Tag) AtIndex(index int) string {
+	if len(t) > index+1 && t.True() {
+		return t[index]
+	}
+	return ""
+}
+
 // False only returns true if the tag's first value matches
 // one in ConfigTagFalse (by default this is just "-")
 func (t Tag) False() bool {

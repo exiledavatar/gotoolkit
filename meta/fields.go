@@ -200,6 +200,17 @@ func (f Fields) ByKinds(kinds ...reflect.Kind) Fields {
 	return fields
 }
 
+// NonEmptyTagValues returns a slice of the first non-empty, non-nil tag that satisfies Tag.True and matches
+// a key in the order given. In order to avoid slice length mismatches, it actually does use an empty string for fields
+// where no match is found.
+func (f Fields) NonEmptyTagValues(keys ...string) []string {
+	var values []string
+	for _, field := range f {
+		values = append(values, field.NonEmptyTagValue(keys...))
+	}
+	return values
+}
+
 // // FirstTagValues returns a slice of the first Tag value for the given key
 // func (f Fields) FirstTagValues(key string) []string {
 // 	var values []string
