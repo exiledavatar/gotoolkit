@@ -56,6 +56,7 @@ func (f Field) ToStruct() (Struct, error) {
 		Name:       f.Name,
 		NameSpace:  f.Parent.NameSpace,
 		Attributes: f.Attributes,
+		Parent:     f.Parent,
 		Tags:       f.Tags(), //any(f.Tags()).(map[string][]string),
 	})
 	if err != nil {
@@ -128,7 +129,6 @@ func (f Field) TagValueAtIndex(index int, keys ...string) string {
 	}
 	return f.Name
 }
-
 
 func (f Field) NonEmptyTagValue(keys ...string) string {
 	if tag := f.Tags().NonEmptyValue(keys...); len(tag) > 0 {
