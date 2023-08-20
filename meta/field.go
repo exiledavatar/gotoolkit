@@ -49,8 +49,9 @@ func (f Field) ElementType() reflect.Type {
 }
 
 // Converts the element of a Array, Chan, Map, Pointer, or Slice to
-// a Struct.
-func (f Field) ToStruct() (Struct, error) {
+// a Struct. Because it is designed for templating and piping, it panics
+// if it cannot convert the field to a struct
+func (f Field) ToStruct() Struct {
 
 	s, err := NewStruct(f.Value.Type().Elem(), Structconfig{
 		Name:       f.Name,
@@ -60,9 +61,9 @@ func (f Field) ToStruct() (Struct, error) {
 		Tags:       f.Tags(), //any(f.Tags()).(map[string][]string),
 	})
 	if err != nil {
-		return s, err
+		panic(err)
 	}
-	return s, nil
+	return s
 }
 
 // Tags returns the parsed struct field tags

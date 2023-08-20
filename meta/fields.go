@@ -232,13 +232,12 @@ func (f Fields) NonEmptyTagValues(keys ...string) []string {
 // }
 
 // ElementsToStructs iterates through each field, attempts to convert it
-// to a Struct, and returns a slice of the valid Structs.
+// to a Struct, and returns a slice of the valid Structs. Note that it will
+// panic if any field cannot be converted to a struct
 func (f Fields) ToStructs() Structs {
 	var s Structs
 	for _, field := range f {
-		if st, err := field.ToStruct(); err == nil {
-			s = append(s, st)
-		}
+		s = append(s, field.ToStruct())
 	}
 	return s
 }
