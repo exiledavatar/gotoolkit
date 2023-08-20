@@ -40,3 +40,16 @@ func ToIndirectReflectValue(value any) (reflect.Value, reflect.Type, bool) {
 
 	return rv, rt, pointer
 }
+
+type StructWithData struct {
+	Struct
+	Data
+}
+
+func ToAnySlice[T any](value []T) []any {
+	var anyValue []any
+	for _, v := range value {
+		anyValue = append(anyValue, v)
+	}
+	return anyValue
+}

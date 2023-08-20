@@ -51,6 +51,22 @@ func ToStruct(value any) (Struct, error) {
 	}
 }
 
+func ToStructWithData(value any) (StructWithData, error) {
+	s, isStructWithData := value.(StructWithData)
+	if isStructWithData {
+		return s, nil
+	}
+	switch v, err := ToValue(value); {
+	case err != nil:
+		return s, err
+	case v.Kind() == reflect.Slice:
+	case v.Kind() == reflect.Struct:
+	default:
+	}
+
+	return s, nil
+}
+
 // NewUUID creates a new UUID and sets it recursively
 func (s *Struct) NewUUID() string {
 	id := strings.ReplaceAll(uuid.NewString(), "-", "")

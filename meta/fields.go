@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 
@@ -177,7 +178,15 @@ func (f Fields) ByNames(names ...string) Fields {
 		}
 	}
 	return fields
+}
 
+func (f Fields) ByName(name string) Field {
+	for _, field := range f {
+		if field.Name == name {
+			return field
+		}
+	}
+	panic(fmt.Sprintf("Fields.ByName: name %s not found", name))
 }
 
 func (f Fields) ByTypes(types ...reflect.Type) Fields {
@@ -232,4 +241,13 @@ func (f Fields) ToStructs() Structs {
 		}
 	}
 	return s
+}
+
+// Field is a convenience function to avoid having to index in a pipeline.
+// It panics if Fields isn't length 1
+func (f Fields) Field() Field {
+	if len(f) == 1 {
+		return f[0]
+	}
+	panic("Fields must be length 1")
 }
