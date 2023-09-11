@@ -36,7 +36,14 @@ func ToValueMap(value any, tagKey string) ValueMap {
 	// - else: include all exported fields
 	switch {
 	case len(fields.WithTagFalse(tagKey)) > 0:
-		fields = fields.WithTagTrue(tagKey)
+		// fields = fields.WithTagTrue(tagKey)
+		var ff Fields
+		for _, field := range fields {
+			if !field.HasTagFalse(tagKey) {
+				ff = append(ff, field)
+			}
+		}
+		fields = ff
 	case len(fields.WithTagTrue(tagKey)) > 0:
 		fields = fields.WithTagTrue(tagKey)
 	default:
