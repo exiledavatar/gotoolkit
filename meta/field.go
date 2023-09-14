@@ -155,3 +155,16 @@ func (f Field) MultiValued() bool {
 
 	}
 }
+
+func (f Field) ToData() Data {
+	value := f.Value.Interface()
+	return Data(ToSlice(value))
+}
+
+func (f Field) ToStructWithData() StructWithData {
+	return StructWithData{
+		Struct: f.ToStruct(),
+		Data:   f.ToData(),
+	}
+}
+

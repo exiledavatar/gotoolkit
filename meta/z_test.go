@@ -162,3 +162,33 @@ func TestX(t *testing.T) {
 		// fmt.Println(chElem)
 	})
 }
+
+type Simple struct {
+	A string
+	B bool
+	C []int    `struct:"true"`
+	D []string `struct:"true"`
+	E []bool
+}
+
+var SS = []Simple{
+	{"1", true, []int{0, 1, 2, 3}, []string{"a", "b"}, []bool{true, false, false}},
+	{"2", true, []int{40, 41}, []string{"c", "d", "e"}, []bool{true, false, false}},
+	{"3", true, []int{51, 52, 53}, []string{"f"}, []bool{true, false, false}},
+}
+
+func TestZ(t *testing.T) {
+	t.Run("Z", func(t *testing.T) {
+		s := meta.ToStructs(SS)
+		children := s[0].Fields().WithTagTrue("struct")
+		data := s.ExtractDataByName(children.Names()...)
+		for k, v := range data {
+			fmt.Printf("%s\t%v\n", k, v)
+			for _, e := range v {
+				// fmt.Println(e)
+				fmt.Printf("%T\n", e)
+			}
+		}
+		// fmt.Printf("%#v\n", data)
+	})
+}

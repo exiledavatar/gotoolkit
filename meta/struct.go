@@ -51,21 +51,34 @@ func ToStruct(value any) (Struct, error) {
 	}
 }
 
-func ToStructWithData(value any) (StructWithData, error) {
-	s, isStructWithData := value.(StructWithData)
-	if isStructWithData {
-		return s, nil
-	}
-	switch v, err := ToValue(value); {
-	case err != nil:
-		return s, err
-	case v.Kind() == reflect.Slice:
-	case v.Kind() == reflect.Struct:
-	default:
-	}
+// func ToStructWithData(value any) (StructWithData, error) {
+// 	s, isStructWithData := value.(StructWithData)
+// 	if isStructWithData {
+// 		return s, nil
+// 	}
+// 	swd := StructWithData{}
+// 	switch v, err := ToValue(value); {
+// 	case err != nil:
+// 		return s, err
+// 	case v.Kind() == reflect.Slice:
+// 		if v.Len() == 0 {
+// 			return swd, fmt.Errorf("ToStructWithData expects len(value) > 0")
+// 		}
+// 	case v.Kind() == reflect.Struct:
+// 		str, err := ToStruct(value)
+// 		if err != nil {
+// 			return swd, err
+// 		}
+// 		swd := StructWithData{
+// 			Struct: str,
+// 			Data:   Data(ToSlice(value)),
+// 		}
+// 		return swd, nil
+// 	default:
+// 	}
 
-	return s, nil
-}
+// 	return s, nil
+// }
 
 // NewUUID creates a new UUID and sets it recursively
 func (s *Struct) NewUUID() string {
@@ -234,4 +247,13 @@ func (s *Struct) Fields() Fields {
 		fields = append(fields, field)
 	}
 	return fields
+}
+
+func (s *Struct) ExtractDataByName(names ...string) map[string]Data {
+	data := map[string]Data{}
+	data[s.Name] = Data(ToSlice(s.Value.Interface()))
+	for _, child := range s.Fields().ByNames(names...) {
+		data[child.Name] = Data(ToSlice(child.Value.Interface()))
+	}
+	return data
 }

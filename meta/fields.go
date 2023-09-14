@@ -250,3 +250,37 @@ func (f Fields) Field() Field {
 	}
 	panic("Fields must be length 1")
 }
+
+func (f Fields) ToStructsWithData() []StructWithData {
+	var s []StructWithData
+	for _, field := range f {
+		s = append(s, field.ToStructWithData())
+	}
+	return s
+}
+
+func (f Fields) ToStructsWithDataMap() map[string]StructWithData {
+	s := map[string]StructWithData{}
+	for _, field := range f {
+		swd := field.ToStructWithData()
+		s[swd.Name] = swd
+	}
+	return s
+}
+
+func (f Fields) ToData() []Data {
+	data := []Data{}
+	for _, field := range f {
+		data = append(data, field.ToData())
+	}
+	return data
+}
+
+func (f Fields) ToDataMap() map[string]Data {
+	data := map[string]Data{}
+	for _, field := range f {
+		data[field.Name] = field.ToData()
+	}
+	return data
+}
+

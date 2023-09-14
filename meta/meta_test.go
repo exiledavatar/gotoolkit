@@ -26,31 +26,33 @@ type ExStruct struct {
 }
 
 type ExampleStruct struct {
-	BoolValue          bool             `vm:"true" json:"boolvalue"`
-	boolValue          bool             `vm:""`
-	BoolPointer        *bool            `vm:"" json:"boolpointer,omitempty"`
-	boolPointer        *bool            `vm:""`
-	StringValue        string           `vm:"" db:"stringvalue"`
-	stringValue        string           `vm:""`
-	StringPointer      *string          `vm:"" db:"dbstringpointer" pg:"pgstringpointer" json:"jsonstringpointer"`
-	stringPointer      *string          `vm:""`
-	IntValue           int              `vm:"" db:"dbintvalue" pg:"pgintvalue"`
-	intValue           int              `vm:""`
-	IntPointer         *int             `vm:"" pg:"pgintpointer"`
-	intPointer         *int             `vm:""`
-	Bytes              []byte           `vm:""`
-	Map                map[string]any   `vm:""`
-	Slice              []any            `vm:"" db:"dbslice" pg:""`
-	slice              *[]any           `vm:""`
-	StructValue        ExStruct         `vm:""`
-	structValue        ExStruct         `vm:""`
-	StructPointer      *ExStruct        `vm:""`
-	structPointer      *ExStruct        `vm:""`
-	ExampleStructSlice []ExampleStruct  `vm:""`
-	exampleStructSlice *[]ExampleStruct `vm:""`
-	Struct0Fields      Struct0Fields
-	Struct1Fields      Struct1Fields
-	Struct2Fields      Struct2Fields
+	BoolValue           bool             `vm:"true" json:"boolvalue"`
+	boolValue           bool             `vm:""`
+	BoolPointer         *bool            `vm:"" json:"boolpointer,omitempty"`
+	boolPointer         *bool            `vm:""`
+	StringValue         string           `vm:"" db:"stringvalue"`
+	stringValue         string           `vm:""`
+	StringPointer       *string          `vm:"" db:"dbstringpointer" pg:"pgstringpointer" json:"jsonstringpointer"`
+	stringPointer       *string          `vm:""`
+	IntValue            int              `vm:"" db:"dbintvalue" pg:"pgintvalue"`
+	intValue            int              `vm:""`
+	IntPointer          *int             `vm:"" pg:"pgintpointer"`
+	intPointer          *int             `vm:""`
+	Bytes               []byte           `vm:""`
+	Map                 map[string]any   `vm:""`
+	Slice               []any            `vm:"" db:"dbslice" pg:""`
+	slice               *[]any           `vm:""`
+	StructValue         ExStruct         `vm:""`
+	structValue         ExStruct         `vm:""`
+	StructPointer       *ExStruct        `vm:""`
+	structPointer       *ExStruct        `vm:""`
+	ExampleStructSlice  []ExampleStruct  `vm:"" struct:"true"`
+	exampleStructSlice  *[]ExampleStruct `vm:""`
+	ExampleStructSlice2 []ExampleStruct  `vm:"" struct:"true"`
+	ExampleStructSlice3 []ExampleStruct  `vm:"" struct:"true"`
+	Struct0Fields       Struct0Fields
+	Struct1Fields       Struct1Fields
+	Struct2Fields       Struct2Fields
 	ExStruct
 }
 
