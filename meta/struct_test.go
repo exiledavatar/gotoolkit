@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ericsgagnon/qgenda/pkg/meta"
+	"github.com/exiledavatar/gotoolkit/meta"
 )
 
 func TestToStruct(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ericsgagnon/qgenda/pkg/meta"
+	"github.com/exiledavatar/gotoolkit/meta"
 )
 
 func TestToValueMap(t *testing.T) {

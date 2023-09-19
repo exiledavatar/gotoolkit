@@ -5,12 +5,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ericsgagnon/qgenda/pkg/meta"
+	"github.com/exiledavatar/gotoolkit/meta"
 )
 
 func TestToFields(t *testing.T) {
 	// this is the standard output that all non-nil returns should produce
-	expectedFields := meta.ToFields(structExample) //
+	expectedFields, _ := meta.ToFields(structExample) //
 
 	var nilFields meta.Fields
 
@@ -34,7 +34,7 @@ func TestToFields(t *testing.T) {
 	fmt.Printf("%-40s%-30s%-30s%-30s%-12s\n", "Test", "Input", "Output(Length)", "Expect(Length)", "Pass")
 	for _, v := range testCases {
 		t.Run(v.Name, func(t *testing.T) {
-			fields := meta.ToFields(v.Input)
+			fields, _ := meta.ToFields(v.Input)
 			// fieldsSliceSlice = append(fieldsSliceSlice, fields)
 			pass := len(fields) == len(v.Expect)
 

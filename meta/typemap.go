@@ -3,8 +3,6 @@ package meta
 import (
 	"reflect"
 	"time"
-	// "github.com/ericsgagnon/qgenda/pkg/meta"
-	// "github.com/exiledavatar/gotoolkit/meta"
 )
 
 // default type maps between go and other systems
