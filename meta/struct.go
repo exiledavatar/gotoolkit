@@ -20,35 +20,38 @@ type Struct struct {
 	Attributes map[string]any
 	Tags       Tags //map[string][]string
 	Parent     *Struct
+	Data
 }
 
 func ToStruct(value any) (Struct, error) {
-
+	d := ToData(value)
 	s, isStruct := value.(Struct)
 	if isStruct {
 		// log.Printf("%v is already a struct\n", value)
 		return s, nil
 	}
-
-	switch v, err := ToValue(value); {
-	case err != nil:
-		// log.Println("ToValue err not nil")
+	v, err := ToValue(value)
+	switch {
+	case err != nil || v.Kind() == reflect.Invalid:
 		return s, err
+	case (v.Kind() == reflect.Slice || v.Kind() == reflect.Array || v.Kind() == reflect.Map) &&
+		len(v.Children()) > 0 &&
+		v.Children()[0].Kind() == reflect.Struct:
+		v = v.Children()[0]
 	case v.Kind() != reflect.Struct:
-		// log.Println("ToValue(value).Kind() != reflect.Struct")
 		return s, fmt.Errorf("invalid (kind) type: (%s) %s", v.Kind(), v.Type())
 	default:
-		// log.Println("default, creating struct")
-		pkgPath := strings.Split(v.Type().PkgPath(), "/")
-		s = Struct{
-			Name:               v.Type().Name(),
-			NameSpace:          []string{pkgPath[len(pkgPath)-1]},
-			NameSpaceSeparator: ".",
-			Value:              v,
-			UUID:               strings.ReplaceAll(uuid.NewString(), "-", ""),
-		}
-		return s, nil
 	}
+	pkgPath := strings.Split(v.Type().PkgPath(), "/")
+	s = Struct{
+		Name:               v.Type().Name(),
+		NameSpace:          []string{pkgPath[len(pkgPath)-1]},
+		NameSpaceSeparator: ".",
+		Value:              v,
+		UUID:               strings.ReplaceAll(uuid.NewString(), "-", ""),
+		Data:               d,
+	}
+	return s, nil
 }
 
 // func ToStructWithData(value any) (StructWithData, error) {
@@ -256,4 +259,26 @@ func (s *Struct) ExtractDataByName(names ...string) map[string]Data {
 		data[child.Name] = Data(ToSlice(child.Value.Interface()))
 	}
 	return data
+}
+
+func (s *Struct) Extract(names ...string) map[string]Struct {
+	structs := map[string]Struct{}
+	for _, child := range s.Fields().ByNames(names...) {
+		structs[child.Name] = child.ToStruct()
+	}
+
+	data := map[string]Data{}
+	for _, row := range s.Data {
+		rowValue := reflect.ValueOf(row)
+		for _, childName := range names {
+			childRowData := ToData(rowValue.FieldByName(childName).Interface())
+			data[childName] = append(data[childName], childRowData...)
+		}
+	}
+	for k, str := range structs {
+		str.Data = data[k]
+		structs[k] = str
+	}
+	structs[s.Name] = *s
+	return structs
 }

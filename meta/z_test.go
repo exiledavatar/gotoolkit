@@ -163,32 +163,44 @@ func TestX(t *testing.T) {
 	})
 }
 
+type IntStruct struct {
+	Z []int
+	Y string
+}
+
 type Simple struct {
 	A string
 	B bool
-	C []int    `struct:"true"`
-	D []string `struct:"true"`
+	C []IntStruct `struct:"true"`
+	D []string
 	E []bool
 }
 
+// var what = IntStruct{[]int{0, 1, 2}}
 var SS = []Simple{
-	{"1", true, []int{0, 1, 2, 3}, []string{"a", "b"}, []bool{true, false, false}},
-	{"2", true, []int{40, 41}, []string{"c", "d", "e"}, []bool{true, false, false}},
-	{"3", true, []int{51, 52, 53}, []string{"f"}, []bool{true, false, false}},
+	{A: "1", B: true, C: []IntStruct{{[]int{0, 1, 2}, "1A"}, {[]int{3, 4, 5}, "1B"}, {[]int{6, 7, 8}, "1C"}}, D: []string{"a", "b"}, E: []bool{true, false, false}},
+	{A: "2", B: true, C: []IntStruct{{[]int{10, 11, 12}, "2A"}, {[]int{13, 14, 15}, "2B"}, {[]int{16, 17, 18}, "2C"}}, D: []string{"a", "b"}, E: []bool{true, false, false}},
+	{A: "3", B: true, C: []IntStruct{{[]int{100, 101, 102}, "3A"}, {[]int{103, 104, 105}, "3B"}, {[]int{106, 107, 108}, "3C"}}, D: []string{"a", "b"}, E: []bool{true, false, false}},
 }
 
 func TestZ(t *testing.T) {
 	t.Run("Z", func(t *testing.T) {
-		s := meta.ToStructs(SS)
-		children := s[0].Fields().WithTagTrue("struct")
-		data := s.ExtractDataByName(children.Names()...)
-		for k, v := range data {
-			fmt.Printf("%s\t%v\n", k, v)
-			for _, e := range v {
-				// fmt.Println(e)
-				fmt.Printf("%T\n", e)
-			}
+		s, err := meta.ToStruct(SS)
+		if err != nil {
+			log.Println(err)
 		}
+		children := s.Fields().WithTagTrue("struct")
+		for k, str := range s.Extract(children.Names()...) {
+			fmt.Printf("%s:\t%v\n", k, str.Data)
+		}
+		// data := s.ExtractDataByName(children.Names()...)
+		// for k, v := range data {
+		// 	fmt.Printf("%s\t%v\n", k, v)
+		// 	for _, e := range v {
+		// 		// fmt.Println(e)
+		// 		// fmt.Printf("%T\n", e)
+		// 	}
+		// }
 		// fmt.Printf("%#v\n", data)
 	})
 }

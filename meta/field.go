@@ -52,18 +52,18 @@ func (f Field) ElementType() reflect.Type {
 // a Struct. Because it is designed for templating and piping, it panics
 // if it cannot convert the field to a struct
 func (f Field) ToStruct() Struct {
-
-	s, err := NewStruct(f.Value.Type().Elem(), Structconfig{
+	switch s, err := NewStruct(f.Value.Interface(), Structconfig{
 		Name:       f.Name,
 		NameSpace:  f.Parent.NameSpace,
 		Attributes: f.Attributes,
 		Parent:     f.Parent,
 		Tags:       f.Tags(), //any(f.Tags()).(map[string][]string),
-	})
-	if err != nil {
+	}); {
+	case err != nil:
 		panic(err)
+	default:
+		return s
 	}
-	return s
 }
 
 // Tags returns the parsed struct field tags
@@ -167,4 +167,3 @@ func (f Field) ToStructWithData() StructWithData {
 		Data:   f.ToData(),
 	}
 }
-
