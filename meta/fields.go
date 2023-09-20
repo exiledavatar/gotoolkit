@@ -2,7 +2,6 @@ package meta
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"golang.org/x/exp/slices"
@@ -11,19 +10,14 @@ import (
 type Fields []Field
 
 func ToFields(value any) (Fields, error) {
-	// var fields Fields
 	fields, ok := value.(Fields)
 	if ok {
-		log.Println("already Fields")
 		return fields, nil
 	}
-
 	s, err := ToStruct(value)
 	if err != nil {
-		log.Println("ToFields - ToStruct err not nil")
 		return fields, err
 	}
-
 	return s.Fields(), nil
 
 }
@@ -237,7 +231,11 @@ func (f Fields) NonEmptyTagValues(keys ...string) []string {
 func (f Fields) ToStructs() Structs {
 	var s Structs
 	for _, field := range f {
-		s = append(s, field.ToStruct())
+		str, err := field.ToStruct()
+		if err != nil {
+			continue
+		}
+		s = append(s, str)
 	}
 	return s
 }
@@ -249,23 +247,6 @@ func (f Fields) Field() Field {
 		return f[0]
 	}
 	panic("Fields must be length 1")
-}
-
-func (f Fields) ToStructsWithData() []StructWithData {
-	var s []StructWithData
-	for _, field := range f {
-		s = append(s, field.ToStructWithData())
-	}
-	return s
-}
-
-func (f Fields) ToStructsWithDataMap() map[string]StructWithData {
-	s := map[string]StructWithData{}
-	for _, field := range f {
-		swd := field.ToStructWithData()
-		s[swd.Name] = swd
-	}
-	return s
 }
 
 func (f Fields) ToData() []Data {
@@ -283,4 +264,3 @@ func (f Fields) ToDataMap() map[string]Data {
 	}
 	return data
 }
-

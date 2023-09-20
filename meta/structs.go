@@ -1,11 +1,5 @@
 package meta
 
-import (
-	"fmt"
-
-	"golang.org/x/exp/slices"
-)
-
 type Structs []Struct
 
 func ToStructs[S []T, T any](value S) Structs {
@@ -97,24 +91,24 @@ func (s Structs) ExtractDataByName(names ...string) map[string]Data {
 	return data
 }
 
-func (s Structs) ParentChildSWDMapByName(names ...string) map[string]StructWithData {
-	if slices.Contains(names, s[0].Name) {
-		panic(fmt.Sprintf("parent name %s is duplicated in field name, cannot proceed", s[0].Name))
-	}
+// func (s Structs) ParentChildSWDMapByName(names ...string) map[string]StructWithData {
+// 	if slices.Contains(names, s[0].Name) {
+// 		panic(fmt.Sprintf("parent name %s is duplicated in field name, cannot proceed", s[0].Name))
+// 	}
 
-	structMap := map[string]Struct{}
-	structMap[s[0].Name] = s[0]
-	childFields := s[0].Fields().ByNames(names...)
-	for _, field := range childFields {
-		structMap[field.Name] = field.ToStruct()
-	}
-	dataMap := s.ExtractDataByName(names...)
-	swdMap := map[string]StructWithData{}
-	for k, v := range structMap {
-		swdMap[k] = StructWithData{
-			Struct: v,
-			Data:   dataMap[k],
-		}
-	}
-	return swdMap
-}
+// 	structMap := map[string]Struct{}
+// 	structMap[s[0].Name] = s[0]
+// 	childFields := s[0].Fields().ByNames(names...)
+// 	for _, field := range childFields {
+// 		structMap[field.Name] = field.ToStruct()
+// 	}
+// 	dataMap := s.ExtractDataByName(names...)
+// 	swdMap := map[string]StructWithData{}
+// 	for k, v := range structMap {
+// 		swdMap[k] = StructWithData{
+// 			Struct: v,
+// 			Data:   dataMap[k],
+// 		}
+// 	}
+// 	return swdMap
+// }

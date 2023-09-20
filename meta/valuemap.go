@@ -20,11 +20,11 @@ func ToValueMap(value any, tagKey string) ValueMap {
 	case Struct:
 		fields = v.Fields()
 	default:
-		var err error
-		fields, err = ToFields(v)
+		str, err := ToStruct(value)
 		if err != nil {
-			panic(err)
+			return nil
 		}
+		fields = str.Fields()
 	}
 	if len(fields) == 0 {
 		return nil
@@ -71,11 +71,11 @@ func NewValueMap(value any, tagKey, excludeValue, includeValue string) ValueMap 
 	case Struct:
 		fields = v.Fields()
 	default:
-		var err error
-		fields, err = ToFields(v)
+		str, err := ToStruct(value)
 		if err != nil {
-			panic(err)
+			return nil
 		}
+		fields = str.Fields()
 	}
 	if len(fields) == 0 {
 		return nil

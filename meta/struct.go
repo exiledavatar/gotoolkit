@@ -31,57 +31,38 @@ func ToStruct(value any) (Struct, error) {
 		return s, nil
 	}
 	v, err := ToValue(value)
-	switch {
-	case err != nil || v.Kind() == reflect.Invalid:
+	switch kind := v.Value.Kind(); {
+	case err != nil || kind == reflect.Invalid:
 		return s, err
-	case (v.Kind() == reflect.Slice || v.Kind() == reflect.Array || v.Kind() == reflect.Map) &&
-		len(v.Children()) > 0 &&
-		v.Children()[0].Kind() == reflect.Struct:
-		v = v.Children()[0]
-	case v.Kind() != reflect.Struct:
-		return s, fmt.Errorf("invalid (kind) type: (%s) %s", v.Kind(), v.Type())
+	case (kind == reflect.Slice || kind == reflect.Array) && v.Len() > 0:
+		v, err = ToValue(v.Value.Index(0).Interface())
+		if err != nil {
+			return s, err
+		}
+	case (kind == reflect.Slice || kind == reflect.Array) && v.Len() == 0:
+		v, err = ToValue(reflect.New(v.Type().Elem()).Elem().Interface())
+		if err != nil {
+			return s, err
+		}
+
+	}
+
+	switch kind := v.Kind(); {
+	case kind == reflect.Struct:
+		pkgPath := strings.Split(v.Type().PkgPath(), "/")
+		s = Struct{
+			Name:               v.Type().Name(),
+			NameSpace:          []string{pkgPath[len(pkgPath)-1]},
+			NameSpaceSeparator: ".",
+			Value:              v,
+			UUID:               strings.ReplaceAll(uuid.NewString(), "-", ""),
+			Data:               d,
+		}
+		return s, nil
 	default:
+		return s, fmt.Errorf("invalid (kind) type: (%s) %s", v.Kind(), v.Type())
 	}
-	pkgPath := strings.Split(v.Type().PkgPath(), "/")
-	s = Struct{
-		Name:               v.Type().Name(),
-		NameSpace:          []string{pkgPath[len(pkgPath)-1]},
-		NameSpaceSeparator: ".",
-		Value:              v,
-		UUID:               strings.ReplaceAll(uuid.NewString(), "-", ""),
-		Data:               d,
-	}
-	return s, nil
 }
-
-// func ToStructWithData(value any) (StructWithData, error) {
-// 	s, isStructWithData := value.(StructWithData)
-// 	if isStructWithData {
-// 		return s, nil
-// 	}
-// 	swd := StructWithData{}
-// 	switch v, err := ToValue(value); {
-// 	case err != nil:
-// 		return s, err
-// 	case v.Kind() == reflect.Slice:
-// 		if v.Len() == 0 {
-// 			return swd, fmt.Errorf("ToStructWithData expects len(value) > 0")
-// 		}
-// 	case v.Kind() == reflect.Struct:
-// 		str, err := ToStruct(value)
-// 		if err != nil {
-// 			return swd, err
-// 		}
-// 		swd := StructWithData{
-// 			Struct: str,
-// 			Data:   Data(ToSlice(value)),
-// 		}
-// 		return swd, nil
-// 	default:
-// 	}
-
-// 	return s, nil
-// }
 
 // NewUUID creates a new UUID and sets it recursively
 func (s *Struct) NewUUID() string {
@@ -93,9 +74,6 @@ func (s *Struct) NewUUID() string {
 // SetUUID recursively sets s and its fields' struct UUID's to id
 func (s *Struct) SetUUID(id string) {
 	s.UUID = id
-	// if s.Fields != nil {
-	// 	s.Fields.SetUUID(id)
-	// }
 }
 
 type Structconfig struct {
@@ -264,7 +242,11 @@ func (s *Struct) ExtractDataByName(names ...string) map[string]Data {
 func (s *Struct) Extract(names ...string) map[string]Struct {
 	structs := map[string]Struct{}
 	for _, child := range s.Fields().ByNames(names...) {
-		structs[child.Name] = child.ToStruct()
+		childStruct, err := child.ToStruct()
+		if err != nil {
+			continue
+		}
+		structs[child.Name] = childStruct
 	}
 
 	data := map[string]Data{}

@@ -1,7 +1,6 @@
 package meta
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -14,20 +13,24 @@ func ToData(value any) Data {
 	// }
 
 	// return data
+	if value == nil {
+		return nil
+	}
+	// fmt.Printf("Value is %#v -----------------------------------\n", value)
 	return Data(ToSlice(value))
+	// return Data{}
 }
 
 // ToSlice is intended to explicity convert a slice to a slice of type any
 func ToSlice(a any) []any {
-
 	v, err := ToValue(a)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	var s []any
 	switch {
 	case v.Kind() == reflect.Invalid:
-		panic(fmt.Sprintf("%v is invalid", a))
+		return nil
 	case v.Kind() == reflect.Slice || v.Kind() == reflect.Array:
 		for i := 0; i < v.Len(); i++ {
 			s = append(s, v.Index(i).Interface())

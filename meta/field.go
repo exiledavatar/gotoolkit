@@ -42,28 +42,44 @@ func (f Field) Type() reflect.Type {
 // ElementType returns the type of an element of a map or slice
 func (f Field) ElementType() reflect.Type {
 	ft := f.StructField.Type
-	if ft.Kind() == reflect.Slice || ft.Kind() == reflect.Map {
+	switch kind := ft.Kind(); kind {
+	case reflect.Slice:
 		return ft.Elem()
+	case reflect.Array:
+		return ft.Elem()
+	case reflect.Map:
+		return ft.Elem()
+	default:
+		return nil
 	}
-	return nil
 }
 
-// Converts the element of a Array, Chan, Map, Pointer, or Slice to
+// Converts the element of an Array, Chan, Map, Pointer, or Slice to
 // a Struct. Because it is designed for templating and piping, it panics
 // if it cannot convert the field to a struct
-func (f Field) ToStruct() Struct {
-	switch s, err := NewStruct(f.Value.Interface(), Structconfig{
+func (f Field) ToStruct() (Struct, error) {
+	var value any
+	switch kind := f.Value.Kind(); {
+	case kind == reflect.Slice || kind == reflect.Array && f.Value.Len() > 0:
+		value = f.Value.Index(0).Interface()
+	case kind == reflect.Map && f.Value.Len() > 0:
+		value = f.Value.MapRange().Value()
+	case kind == reflect.Slice || kind == reflect.Array || kind == reflect.Map && f.Value.Len() == 0:
+		value = reflect.New(f.Type().Elem()).Elem().Interface()
+	default:
+		value = f.Value.Interface()
+	}
+	s, err := NewStruct(value, Structconfig{
 		Name:       f.Name,
 		NameSpace:  f.Parent.NameSpace,
 		Attributes: f.Attributes,
 		Parent:     f.Parent,
-		Tags:       f.Tags(), //any(f.Tags()).(map[string][]string),
-	}); {
-	case err != nil:
-		panic(err)
-	default:
-		return s
+		Tags:       f.Tags(),
+	})
+	if err != nil {
+		return Struct{}, err
 	}
+	return s, nil
 }
 
 // Tags returns the parsed struct field tags
@@ -161,9 +177,9 @@ func (f Field) ToData() Data {
 	return Data(ToSlice(value))
 }
 
-func (f Field) ToStructWithData() StructWithData {
-	return StructWithData{
-		Struct: f.ToStruct(),
-		Data:   f.ToData(),
-	}
-}
+// func (f Field) ToStructWithData() StructWithData {
+// 	return StructWithData{
+// 		Struct: f.ToStruct(),
+// 		Data:   f.ToData(),
+// 	}
+// }
