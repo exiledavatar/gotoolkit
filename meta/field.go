@@ -60,7 +60,7 @@ func (f Field) ElementType() reflect.Type {
 func (f Field) ToStruct() (Struct, error) {
 	var value any
 	switch kind := f.Value.Kind(); {
-	case kind == reflect.Slice || kind == reflect.Array && f.Value.Len() > 0:
+	case (kind == reflect.Slice || kind == reflect.Array) && f.Value.Len() > 0:
 		value = f.Value.Index(0).Interface()
 	case kind == reflect.Map && f.Value.Len() > 0:
 		value = f.Value.MapRange().Value()
