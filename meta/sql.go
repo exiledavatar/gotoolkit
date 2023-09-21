@@ -2,6 +2,8 @@ package meta
 
 import "database/sql"
 
+// SQLResults is a slice of sql.Result that also satisfies the sql.Result interface
+// It is intended to allow either merging or maintaining multiple results
 type SQLResults []sql.Result
 
 func (r SQLResults) LastInsertId() (int64, error) {

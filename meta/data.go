@@ -17,6 +17,7 @@ func ToData(value any) Data {
 		return nil
 	}
 	// fmt.Printf("Value is %#v -----------------------------------\n", value)
+
 	return Data(ToSlice(value))
 	// return Data{}
 }
@@ -40,8 +41,8 @@ func ToSlice(a any) []any {
 		for iter.Next() {
 			s = append(s, iter.Value().Interface())
 		}
-	case v.Kind() == reflect.Struct:
-		s = append(s, v.Interface())
+	default:
+		s = append(s, a)
 	}
 	return s
 
