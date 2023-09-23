@@ -64,7 +64,7 @@ func (f Field) ToStruct() (Struct, error) {
 		value = f.Value.Index(0).Interface()
 	case kind == reflect.Map && f.Value.Len() > 0:
 		value = f.Value.MapRange().Value()
-	case kind == reflect.Slice || kind == reflect.Array || kind == reflect.Map && f.Value.Len() == 0:
+	case (kind == reflect.Slice || kind == reflect.Array || kind == reflect.Map) && f.Value.Len() == 0:
 		value = reflect.New(f.Type().Elem()).Elem().Interface()
 	default:
 		value = f.Value.Interface()
