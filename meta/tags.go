@@ -111,3 +111,74 @@ func (t Tags) Tag(keys ...string) Tag {
 	}
 	return nil
 }
+
+func (t Tags) Set(key string, values ...string) Tags {
+	t[key] = values
+	return t
+}
+
+func (t Tags) Prepend(key, value string) Tags {
+	tag := []string{value}
+	tag = append(tag, t[key]...)
+	t[key] = tag
+	return t
+}
+
+func (t Tags) Append(key, value string) Tags {
+	switch tag, ok := t[key]; {
+	case ok:
+		t[key] = append(tag, value)
+	default:
+		t[key] = []string{value}
+	}
+	return t
+}
+
+func (t Tags) Replace(key, value string, index int) Tags {
+
+	switch tag, ok := t[key]; {
+	case ok && len(tag) >= index+1:
+		tag[index] = value
+		t[key] = tag
+	case ok:
+
+		length := len(tag)
+		if length <= index {
+			length = index + 1
+		}
+		dst := make([]string, length)
+		copy(dst, tag)
+		dst[index] = value
+		t[key] = dst
+	default:
+		tag = make([]string, index+1)
+		tag[index] = value
+		t[key] = tag
+	}
+	return t
+}
+
+func (t Tags) Insert(key, value string, index int) Tags {
+	switch tag, ok := t[key]; {
+	case ok:
+		dst := []string{}
+		for i := 0; i <= len(tag) || i <= index; i++ {
+			switch {
+			case i == index && i < len(tag):
+				dst = append(dst, value, tag[i])
+			case i == index:
+				dst = append(dst, value)
+			case i < len(tag):
+				dst = append(dst, tag[i])
+			default:
+				dst = append(dst, "")
+			}
+		}
+		t[key] = dst
+	default:
+		tag = make([]string, index+1)
+		tag[index] = value
+		t[key] = tag
+	}
+	return t
+}
