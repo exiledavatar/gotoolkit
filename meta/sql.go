@@ -18,6 +18,9 @@ func (r SQLResults) LastInsertId() (int64, error) {
 func (r SQLResults) RowsAffected() (int64, error) {
 	var rowsAffected int64
 	for _, result := range r {
+		if result == nil {
+			continue
+		}
 		rowsi, err := result.RowsAffected()
 		if err != nil {
 			return 0, err
