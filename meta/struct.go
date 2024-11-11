@@ -140,9 +140,10 @@ func NewStruct(value any, cfg Structconfig) (Struct, error) {
 
 // TagName ranges through the provided keys in order and returns the
 // first non-blank, non-false value, or Struct.Name if none are found.
-func (s Struct) TagName(keys ...string) string {
+func (s Struct) TagName(keys ...any) string {
+	ks := ToStringSlice(keys...)
 	name := s.Name
-	for _, key := range keys {
+	for _, key := range ks {
 		switch tag := s.Tags.Tag(key); {
 		case tag == nil || tag.False():
 			continue
@@ -156,6 +157,12 @@ func (s Struct) TagName(keys ...string) string {
 	return name
 }
 
+// // TagNameFromSlice wraps TagName for use in templates, which don't support expansion
+// func (s Struct) TagNameFromSlice(keys []string) string {
+
+// 	return s.TagName(keys...)
+// }
+
 // Identifier returns the full namespaced identifier of the struct
 func (s Struct) Identifier() string {
 	ids := append(s.NameSpace, s.Name)
@@ -165,15 +172,24 @@ func (s Struct) Identifier() string {
 	return strings.Join(ids, s.NameSpaceSeparator)
 }
 
-// Identifier returns the full namespaced identifier of the struct,
+// TagIdentifier returns the full namespaced identifier of the struct,
 // but uses TagName instead of Name
-func (s Struct) TagIdentifier(keys ...string) string {
+func (s Struct) TagIdentifier(keys ...any) string {
 	ids := append(s.NameSpace, s.TagName(keys...))
 	return strings.Join(ids, s.NameSpaceSeparator)
 }
 
 func (s Struct) ValueMap(tagKey string) ValueMap {
 	return ToValueMap(s, tagKey)
+}
+
+func (s Struct) LastNameSpace() string {
+	switch l := len(s.NameSpace); {
+	case l > 0:
+		return s.NameSpace[l-1]
+	default:
+		return ""
+	}
 }
 
 // ExecuteTemplate parses a string and executes it with any additional funcs and data. All data, including the reciever
@@ -185,6 +201,7 @@ func (s *Struct) ExecuteTemplate(tpl string, funcs template.FuncMap, data map[st
 	d := map[string]any{
 		TemplateDataNames["Struct"]: s,
 	}
+
 	for k, v := range data {
 		d[k] = v
 	}
@@ -230,7 +247,7 @@ func (s *Struct) Fields() Fields {
 	return fields
 }
 
-func (s *Struct) ExtractDataByName(names ...string) map[string]Data {
+func (s *Struct) ExtractDataByName(names ...any) map[string]Data {
 	data := map[string]Data{}
 	data[s.Name] = Data(ToSlice(s.Value.Interface()))
 	for _, child := range s.Fields().ByNames(names...) {
@@ -239,7 +256,8 @@ func (s *Struct) ExtractDataByName(names ...string) map[string]Data {
 	return data
 }
 
-func (s *Struct) Extract(names ...string) map[string]Struct {
+func (s *Struct) Extract(names ...any) map[string]Struct {
+
 	structs := map[string]Struct{}
 	for _, child := range s.Fields().ByNames(names...) {
 		childStruct, err := child.ToStruct()
@@ -252,7 +270,12 @@ func (s *Struct) Extract(names ...string) map[string]Struct {
 	data := map[string]Data{}
 	for _, row := range s.Data {
 		rowValue := reflect.ValueOf(row)
-		for _, childName := range names {
+		nms := ToStringSlice(names...)
+		fmt.Println(names...)
+		fmt.Printf("%#v\n", names)
+		fmt.Println(nms)
+		fmt.Printf("%#v\n", nms)
+		for _, childName := range nms {
 			childRowData := ToData(rowValue.FieldByName(childName).Interface())
 			data[childName] = append(data[childName], childRowData...)
 		}

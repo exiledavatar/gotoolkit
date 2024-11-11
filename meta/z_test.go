@@ -190,7 +190,7 @@ func TestZ(t *testing.T) {
 			log.Println(err)
 		}
 		children := s.Fields().WithTagTrue("struct")
-		for k, str := range s.Extract(children.Names()...) {
+		for k, str := range s.Extract(children.Names()) {
 			fmt.Printf("%s:\t%v\n", k, str.Data)
 		}
 		// data := s.ExtractDataByName(children.Names()...)

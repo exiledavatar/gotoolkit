@@ -10,8 +10,9 @@ var ConfigTagFalse = []string{"-"}
 
 // Contains is a wrapper for slices.Contains that returns true if
 // the tag contains any of the given values
-func (t Tag) Contains(values ...string) bool {
-	for _, value := range values {
+func (t Tag) Contains(values ...any) bool {
+	vals := ToStringSlice(values...)
+	for _, value := range vals {
 		if slices.Contains(t, value) {
 			return true
 		}
@@ -21,8 +22,9 @@ func (t Tag) Contains(values ...string) bool {
 
 // NotContains is a wrapper for slices.Contains that returns true if
 // the tag doesn't contain any of the given values
-func (t Tag) NotContains(values ...string) bool {
-	for _, value := range values {
+func (t Tag) NotContains(values ...any) bool {
+	vals := ToStringSlice(values...)
+	for _, value := range vals {
 		if slices.Contains(t, value) {
 			return false
 		}
@@ -32,9 +34,10 @@ func (t Tag) NotContains(values ...string) bool {
 
 // Index is a wrapper for slices.Index that returns the index of the
 // first value found in the tag, in order given, or -1 if not present
-func (t Tag) Index(values ...string) int {
+func (t Tag) Index(values ...any) int {
+	vals := ToStringSlice(values...)
 	var index int
-	for _, value := range values {
+	for _, value := range vals {
 		index = slices.Index(t, value)
 		if index != -1 {
 			return index

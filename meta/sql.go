@@ -2,6 +2,11 @@ package meta
 
 import "database/sql"
 
+type SQLResult struct {
+	sql.Result
+	Values map[string]any
+}
+
 // SQLResults is a slice of sql.Result that also satisfies the sql.Result interface
 // It is intended to allow either merging or maintaining multiple results
 type SQLResults []sql.Result

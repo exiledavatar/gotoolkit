@@ -32,7 +32,7 @@ func (f Fields) Tags() map[string]Tags {
 }
 
 // WithTag returns a subset of Fields with any of the given keys
-func (f Fields) WithTag(keys ...string) Fields {
+func (f Fields) WithTag(keys ...any) Fields {
 	fields := Fields{}
 	for _, field := range f {
 		if field.HasTag(keys...) {
@@ -54,10 +54,10 @@ func (f Fields) WithTagValue(key, value string) Fields {
 }
 
 // WithTagTrue returns a subset of Fields whose Tags satisfy Tags.True
-func (f Fields) WithTagTrue(key string) Fields {
+func (f Fields) WithTagTrue(keys ...any) Fields {
 	fields := Fields{}
 	for _, field := range f {
-		if field.HasTagTrue(key) {
+		if field.HasTagTrue(keys...) {
 			// if field.Tags().True(key) {
 			fields = append(fields, field)
 		}
@@ -78,7 +78,7 @@ func (f Fields) WithTagFalse(key string) Fields {
 }
 
 // WithoutTag returns a subset of Fields that do not have any of the given keys
-func (f Fields) WithoutTag(keys ...string) Fields {
+func (f Fields) WithoutTag(keys ...any) Fields {
 	fields := Fields{}
 	for _, field := range f {
 		if !field.HasTag(keys...) {
@@ -110,7 +110,7 @@ func (f Fields) Names() []string {
 }
 
 // TagNames returns a slice of the field names according to field.TagName
-func (f Fields) TagNames(keys ...string) []string {
+func (f Fields) TagNames(keys ...any) []string {
 	names := []string{}
 	for _, field := range f {
 		names = append(names, field.TagName(keys...))
@@ -129,7 +129,7 @@ func (f Fields) Identifiers() []string {
 
 // TagIdentifiers returns a slice of the fully namespaced identifiers
 // from TagIdentifier
-func (f Fields) TagIdentifiers(keys ...string) []string {
+func (f Fields) TagIdentifiers(keys ...any) []string {
 	identifiers := []string{}
 	for _, field := range f {
 		identifiers = append(identifiers, field.TagIdentifier(keys...))
@@ -164,10 +164,11 @@ func (f Fields) MultiValued() Fields {
 	return fields
 }
 
-func (f Fields) ByNames(names ...string) Fields {
+func (f Fields) ByNames(names ...any) Fields {
+	nms := ToStringSlice(names...)
 	var fields Fields
 	for _, field := range f {
-		if slices.Contains(names, field.Name) {
+		if slices.Contains(nms, field.Name) {
 			fields = append(fields, field)
 		}
 	}
@@ -206,7 +207,7 @@ func (f Fields) ByKinds(kinds ...reflect.Kind) Fields {
 // NonEmptyTagValues returns a slice of the first non-empty, non-nil tag that satisfies Tag.True and matches
 // a key in the order given. In order to avoid slice length mismatches, it actually does use an empty string for fields
 // where no match is found.
-func (f Fields) NonEmptyTagValues(keys ...string) []string {
+func (f Fields) NonEmptyTagValues(keys ...any) []string {
 	var values []string
 	for _, field := range f {
 		values = append(values, field.NonEmptyTagValue(keys...))

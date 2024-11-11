@@ -122,12 +122,12 @@ func mapValues(m map[string]any) []string {
 }
 
 var TemplateDataNames = map[string]string{
-	"Struct":  "Struct",
-	"Structs": "Structs",
-	"Field":   "Field",
-	"Fields":  "Fields",
-	"Tag":     "Tag",
-	"Tags":    "Tags",
+	"Struct": "Struct",
+	// "Structs": "Structs",
+	// "Field":   "Field",
+	// "Fields":  "Fields",
+	// "Tag":     "Tag",
+	// "Tags":    "Tags",
 }
 
 // TemplateOptions is passed to all functions/methods that execute a template.Template

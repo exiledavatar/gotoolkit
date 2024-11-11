@@ -1,7 +1,9 @@
 package meta
 
 import (
+	"fmt"
 	"reflect"
+	"slices"
 )
 
 // ToIndirectReflectValue attempts to convert any value to a reflect.Value and indirect it. If value is nil,
@@ -46,10 +48,85 @@ type StructWithData struct {
 	Data
 }
 
+// ToAnySlice converts a slice []T to []any by wrapping each element in interfaces. Useful when you have a concrete
+// slice and need to feed it to something that requires []any.
 func ToAnySlice[T any](value []T) []any {
 	var anyValue []any
 	for _, v := range value {
 		anyValue = append(anyValue, v)
 	}
 	return anyValue
+}
+
+func Hack(values ...any) []any {
+	var out []any
+
+	return out
+}
+
+// ToSlice should convert a mix of single values and slices to []any, just don't
+// get too tricky
+func ToSlice(values ...any) []any {
+	var out []any
+	for _, value := range values {
+		switch rv := reflect.ValueOf(value); {
+		case !rv.IsValid():
+		// do nothing
+		case rv.Kind() == reflect.Slice:
+			for i := 0; i < rv.Len(); i++ {
+				if rvi := rv.Index(i); rvi.IsValid() {
+					out = append(out, rvi.Interface())
+				}
+
+			}
+		default:
+			out = append(out, rv.Interface())
+		}
+	}
+	return out
+
+}
+
+func RemoveNils(values []any) []any {
+	var out []any
+	for _, v := range values {
+		if v != nil {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+// Flatten is intended for ragged slices that potentially include slices of slices (of slices of slices...)
+// Don't push your luck
+func Flatten(values any) []any {
+	var out []any
+	switch rv := reflect.ValueOf(values); {
+	case !rv.IsValid():
+		return nil
+	case rv.Kind() == reflect.Slice:
+		for i := 0; i < rv.Len(); i++ {
+			if rvi := rv.Index(i); rvi.IsValid() {
+				rvif := Flatten(rvi.Interface())
+				if rvif != nil {
+
+					out = slices.Concat(out, rvif)
+				}
+			}
+		}
+	default:
+		out = append(out, rv.Interface())
+	}
+	return out
+}
+
+func ToStringSlice(values ...any) []string {
+	out := []string{}
+	vs := ToSlice(values...)
+	vs = Flatten(vs)
+	vs = Flatten(vs)
+	for _, v := range vs {
+		out = append(out, fmt.Sprint(v))
+	}
+	return out
 }

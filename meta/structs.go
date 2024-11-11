@@ -26,7 +26,7 @@ func NewStructs[S []T, T any](value S, cfg Structconfig) Structs {
 	return s
 }
 
-func (s Structs) TagName(keys ...string) []string {
+func (s Structs) TagName(keys ...any) []string {
 	var names []string
 	for _, str := range s {
 		names = append(names, str.TagName(keys...))
@@ -78,7 +78,7 @@ func (s Structs) ToStructMap() map[string]Struct {
 
 // }
 
-func (s Structs) ExtractDataByName(names ...string) map[string]Data {
+func (s Structs) ExtractDataByName(names ...any) map[string]Data {
 	data := map[string]Data{}
 	for _, str := range s {
 		strData := Data(ToSlice(str.Value.Interface()))

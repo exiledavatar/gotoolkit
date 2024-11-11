@@ -88,7 +88,7 @@ func (f Field) Tags() Tags {
 }
 
 // HasTag returns true any of the given tag keys exist
-func (f Field) HasTag(keys ...string) bool {
+func (f Field) HasTag(keys ...any) bool {
 	return f.Tags().Exists(keys...)
 }
 
@@ -98,17 +98,17 @@ func (f Field) HasTagValue(key, value string) bool {
 }
 
 // HasTagTrue returns true if its tags satisfy Tags.True
-func (f Field) HasTagTrue(key string) bool {
-	return f.Tags().True(key)
+func (f Field) HasTagTrue(keys ...any) bool {
+	return f.Tags().True(keys...)
 }
 
-// HasTagFalse returns true if its tags satisfy Tags.False
-func (f Field) HasTagFalse(key string) bool {
-	return f.Tags().False(key)
+// HasTagFalse returns true if any Tag satisfies Tags.False
+func (f Field) HasTagFalse(keys ...any) bool {
+	return f.Tags().False(keys...)
 }
 
 // TagName ranges through the provided keys in order and returns the first non-blank, non-false value, or field.Name if none are found.
-func (f Field) TagName(keys ...string) string {
+func (f Field) TagName(keys ...any) string {
 	for _, key := range keys {
 		tag := f.Tags().Value(key)
 		if len(tag) > 0 && tag.True() && tag[0] != "" {
@@ -126,7 +126,7 @@ func (f Field) Identifier() string {
 
 // TagIdentifier uses the parent's Struct.Identifier and appends the field's
 // Name to it
-func (f Field) TagIdentifier(keys ...string) string {
+func (f Field) TagIdentifier(keys ...any) string {
 	return f.Parent.Identifier() + f.Parent.NameSpaceSeparator + f.TagName(keys...)
 }
 
@@ -137,7 +137,7 @@ func (f Field) Tag(key string) Tag {
 
 // TagValueAtIndex returns the first tag.True, non-blank value for keys in the given order.
 // If no match is found, it returns the empty string.
-func (f Field) TagValueAtIndex(index int, keys ...string) string {
+func (f Field) TagValueAtIndex(index int, keys ...any) string {
 	for _, key := range keys {
 		tag := f.Tags().Value(key)
 		if len(tag) > 0 && tag.True() && tag[0] != "" {
@@ -147,7 +147,7 @@ func (f Field) TagValueAtIndex(index int, keys ...string) string {
 	return f.Name
 }
 
-func (f Field) NonEmptyTagValue(keys ...string) string {
+func (f Field) NonEmptyTagValue(keys ...any) string {
 	if tag := f.Tags().NonEmptyValue(keys...); len(tag) > 0 {
 		return tag[0]
 	}

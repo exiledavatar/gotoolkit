@@ -21,8 +21,9 @@ func ToTags(s string) Tags {
 
 // Value returns the parsed Tag for the first key found, in order given, or nil if missing
 // note: it is currently the same as Tags.Tag but may be changed to return the actual string value
-func (t Tags) Value(keys ...string) Tag {
-	for _, key := range keys {
+func (t Tags) Value(keys ...any) Tag {
+	ks := ToStringSlice(keys...)
+	for _, key := range ks {
 		if tag, ok := t[key]; ok && tag.True() {
 			return tag
 		}
@@ -33,8 +34,9 @@ func (t Tags) Value(keys ...string) Tag {
 // NonEmptyValue returns the parsed Tag for the first key found, in order given,
 // where the tag is non-nil, non-empty, and satisfies tag.True.
 // It returns nil if no match is found.
-func (t Tags) NonEmptyValue(keys ...string) Tag {
-	for _, key := range keys {
+func (t Tags) NonEmptyValue(keys ...any) Tag {
+	ks := ToStringSlice(keys...)
+	for _, key := range ks {
 		if tag, ok := t[key]; ok && len(tag) > 0 && tag.True() && tag[0] != "" {
 			return tag
 		}
@@ -43,9 +45,10 @@ func (t Tags) NonEmptyValue(keys ...string) Tag {
 }
 
 // ByKeys returns a subset of Tags with the given keys, or nil if none are found
-func (t Tags) ByKeys(keys ...string) Tags {
+func (t Tags) ByKeys(keys ...any) Tags {
+	ks := ToStringSlice(keys...)
 	tags := Tags{}
-	for _, key := range keys {
+	for _, key := range ks {
 		if value, ok := t[key]; ok {
 			tags[key] = value
 		}
@@ -58,26 +61,41 @@ func (t Tags) ByKeys(keys ...string) Tags {
 
 // False only returns true if the tags exists and the first value matches
 // one in ConfigTagFalse (by default this is just "-")
-func (t Tags) False(key string) bool {
-	if tag, ok := t[key]; ok && tag != nil {
-		return tag.False()
+func (t Tags) False(keys ...any) bool {
+	ks := ToStringSlice(keys...)
+	var out bool
+	for _, key := range ks {
+		switch tag, ok := t[key]; {
+		case out:
+			return out
+		case ok && tag != nil:
+			out = tag.False()
+		}
 	}
 	return false
 }
 
 // True returns true if the tag exists and the first value does not match
 // one in ConfigTagFalse (by default this is just "-")
-func (t Tags) True(key string) bool {
-	if tag, ok := t[key]; ok && tag != nil {
-		return tag.True()
+func (t Tags) True(keys ...any) bool {
+	ks := ToStringSlice(keys...)
+	var out bool
+	for _, key := range ks {
+		switch tag, ok := t[key]; {
+		case out:
+			return out
+		case ok && tag != nil:
+			out = tag.True()
+		}
 	}
 	return false
 }
 
 // Exists returns true if a tag with any of the given keys exists,
 // even if it is empty
-func (t Tags) Exists(keys ...string) bool {
-	for _, key := range keys {
+func (t Tags) Exists(keys ...any) bool {
+	ks := ToStringSlice(keys...)
+	for _, key := range ks {
 		if tag, ok := t[key]; ok && tag != nil {
 			return true
 		}
@@ -103,8 +121,9 @@ func (t Tags) NotContains(key, value string) bool {
 }
 
 // Tag returns the tag for key, or nil if it is missing
-func (t Tags) Tag(keys ...string) Tag {
-	for _, key := range keys {
+func (t Tags) Tag(keys ...any) Tag {
+	ks := ToStringSlice(keys...)
+	for _, key := range ks {
 		if tag, ok := t[key]; ok && tag.True() {
 			return tag
 		}
@@ -112,11 +131,14 @@ func (t Tags) Tag(keys ...string) Tag {
 	return nil
 }
 
+// Set is a convient method wrapper for assigning (replacing) a key's tags
 func (t Tags) Set(key string, values ...string) Tags {
 	t[key] = values
 	return t
 }
 
+// Prepend inserts the value to the beginning of the key's tags
+// it is safe to use even if the key doesn't currently exist
 func (t Tags) Prepend(key, value string) Tags {
 	tag := []string{value}
 	tag = append(tag, t[key]...)
@@ -124,6 +146,8 @@ func (t Tags) Prepend(key, value string) Tags {
 	return t
 }
 
+// Append adds the value to the end of the key's tags
+// it is safe to use even if the key doesn't currently exist
 func (t Tags) Append(key, value string) Tags {
 	switch tag, ok := t[key]; {
 	case ok:

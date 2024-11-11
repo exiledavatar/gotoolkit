@@ -162,3 +162,22 @@ func TestToIndirectReflectValue(t *testing.T) {
 	// fmt.Println(colorRed, "\033[32mnext")
 
 }
+
+func TestToSlicey(t *testing.T) {
+	cases := []any{
+		[]string{"a", "b", "c"},
+		[]int{1, 2, 3},
+		"zed",
+		1432,
+		[][]string{{"98", "76"}},
+		[]any{[]any{1, 4, 2}, []string{"h", "i", "j"}},
+	}
+	for i, v := range cases {
+		vs := meta.ToSlice(v)
+		fmt.Printf("%d\t%#v\t\t%#v\n", i, vs, meta.Flatten(vs))
+
+	}
+
+	fmt.Printf("%#v\n", meta.ToSlice(cases[1], cases[3], ""))
+	// panic(0)
+}
