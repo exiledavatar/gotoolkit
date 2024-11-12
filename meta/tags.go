@@ -79,13 +79,15 @@ func (t Tags) False(keys ...any) bool {
 // one in ConfigTagFalse (by default this is just "-")
 func (t Tags) True(keys ...any) bool {
 	ks := ToStringSlice(keys...)
+	// fmt.Printf("Tags.True: %#v\n", ks)
+	// fmt.Printf("%#v\n", t)
 	var out bool
 	for _, key := range ks {
-		switch tag, ok := t[key]; {
-		case out:
-			return out
-		case ok && tag != nil:
+		if tag, ok := t[key]; ok && tag != nil {
 			out = tag.True()
+		}
+		if out {
+			return out
 		}
 	}
 	return false

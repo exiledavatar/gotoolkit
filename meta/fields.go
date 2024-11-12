@@ -58,7 +58,6 @@ func (f Fields) WithTagTrue(keys ...any) Fields {
 	fields := Fields{}
 	for _, field := range f {
 		if field.HasTagTrue(keys...) {
-			// if field.Tags().True(key) {
 			fields = append(fields, field)
 		}
 	}
@@ -264,4 +263,25 @@ func (f Fields) ToDataMap() map[string]Data {
 		data[field.Name] = field.ToData()
 	}
 	return data
+}
+
+// TagTypes returns the 'type', prefering a tagged value, then falling back to reflect.Type
+func (f Fields) TagTypes(keys ...any) []string {
+	tagtypes := f.NonEmptyTagValues(keys...)
+	ftypes := ToStringSlice(f.Types())
+	return Coalesce(tagtypes, ftypes, "")
+}
+
+func (f Fields) TypeNames() []string {
+	out := []string{}
+	for _, field := range f {
+		out = append(out, field.Type().Name())
+	}
+	return out
+}
+
+func (f Fields) TagTypeNames(keys ...any) []string {
+	tagtypes := f.NonEmptyTagValues(keys...)
+	ftypes := f.TypeNames()
+	return Coalesce(tagtypes, ftypes, "")
 }
