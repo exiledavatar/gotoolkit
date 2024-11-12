@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/exiledavatar/gotoolkit/client/pgclient"
-	"github.com/exiledavatar/gotoolkit/meta"
 )
 
 type Struct0Fields struct{}
@@ -26,6 +26,7 @@ type ExStruct struct {
 }
 
 type ExampleStruct struct {
+	IDHash              string           `pg:"id_hash" primarykey:"true"`
 	BoolValue           bool             `vm:"true" json:"boolvalue"`
 	boolValue           bool             `vm:""`
 	BoolPointer         *bool            `vm:"" json:"boolpointer,omitempty"`
@@ -36,8 +37,9 @@ type ExampleStruct struct {
 	stringPointer       *string          `vm:""`
 	IntValue            int              `vm:"" db:"dbintvalue" pg:"pgintvalue" pgtype:"bigint"`
 	intValue            int              `vm:""`
-	IntPointer          *int             `vm:"" pg:"pgintpointer"`
+	IntPointer          *int             `vm:"" pg:"pgintpointer" pgtype:"something_silly"`
 	intPointer          *int             `vm:""`
+	Time                time.Time        `pg:"some_time"`
 	Bytes               []byte           `vm:""`
 	Map                 map[string]any   `vm:""`
 	Slice               []any            `vm:"" db:"dbslice" pg:""`
@@ -149,21 +151,26 @@ func Test(t *testing.T) {
 	// 	})
 	// }
 
-	str, err := meta.ToStruct(structExample)
+	// str, err := meta.ToStruct(structExample)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// out, err := str.ExecuteTemplate(
+	// 	pgclient.PGTemplates.CreateTable,
+	// 	nil,
+	// 	map[string]any{
+	// 		"Config": pgclient.TemplateConfig,
+	// 	},
+	// )
+	// switch {
+	// case err != nil:
+	// 	log.Println(err)
+	// default:
+	// 	fmt.Println(out)
+	// }
+	text, err := pgclient.CreateTableText(structExample)
 	if err != nil {
 		log.Println(err)
 	}
-	out, err := str.ExecuteTemplate(
-		pgclient.PGTemplates.CreateTable,
-		nil,
-		map[string]any{
-			"Config": pgclient.TemplateConfig,
-		},
-	)
-	switch {
-	case err != nil:
-		log.Println(err)
-	default:
-		fmt.Println(out)
-	}
+	fmt.Println(text)
 }
