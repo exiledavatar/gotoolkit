@@ -130,3 +130,33 @@ func ToStringSlice(values ...any) []string {
 	}
 	return out
 }
+
+// Coalesce tries to mimic similar sql functions: it iterates through slices at the same time and
+// returns a slice with the first non-zero value for each element. Unequal length slices are not an issue
+func Coalesce[S []T, T any](first, second S, dflt T) S {
+	out := S{}
+	lf := len(first)
+	ls := len(second)
+	lmax := max(lf, ls)
+
+	for i := 0; i < lmax; i++ {
+		var fi, si T
+		if lf > i {
+			fi = first[i]
+		}
+		if ls > i {
+			si = second[i]
+		}
+		fiv := reflect.ValueOf(fi)
+		siv := reflect.ValueOf(si)
+		switch {
+		case fiv.IsValid() && !fiv.IsZero():
+			out = append(out, fi)
+		case siv.IsValid() && !siv.IsZero():
+			out = append(out, si)
+		default:
+			out = append(out, dflt)
+		}
+	}
+	return out
+}

@@ -12,6 +12,7 @@ import (
 // TemplateFuncMap includes functions in addition to those already included
 // by text/template: https://pkg.go.dev/text/template#hdr-Functions
 var TemplateFuncMap = template.FuncMap{
+	"coalesce":      Coalesce[[]string, string],
 	"join":          join, // wraps strings.Join but reorders arguments to work with template piping
 	"joinslices":    JoinSlices,
 	"mapkeys":       mapKeys,
@@ -34,20 +35,26 @@ func replace(old string, new string, n int, s string) string {
 func replaceAll(old, new, s string) string {
 	return strings.ReplaceAll(s, old, new)
 }
-func toLowerSlices(s ...string) []string {
-	for i, v := range s {
-		s[i] = strings.ToLower(v)
+
+// toLowerSlices takes a mix of string and []string and returns them in a flattened, lowercased []string
+func toLowerSlices(values ...any) []string {
+	var out []string
+	for _, value := range ToStringSlice(values...) {
+		out = append(out, strings.ToLower(value))
 	}
-	return s
+	return out
 }
 
-func toUpperSlices(s ...string) []string {
-	for i, v := range s {
-		s[i] = strings.ToUpper(v)
+// toUpperSlices takes a mix of string and []string and returns them in a flattened, uppercased []string
+func toUpperSlices(values ...any) []string {
+	var out []string
+	for _, value := range ToStringSlice(values...) {
+		out = append(out, strings.ToUpper(value))
 	}
-	return s
+	return out
 }
 
+// TODO: replace toSlice with ToSlice
 func toStrings(s any) []string {
 	strings := []string{}
 	slicey := toSlice(s)
@@ -57,6 +64,7 @@ func toStrings(s any) []string {
 	return strings
 }
 
+// TODO: this should be deprecated in favor of ToSlice
 // toSlice is intended to explicity convert a slice to a slice of type any
 func toSlice(a any) []any {
 	v := reflect.ValueOf(a)
