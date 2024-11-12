@@ -1,8 +1,6 @@
 package pgclient
 
 import (
-	"database/sql"
-	"errors"
 	"reflect"
 	"text/template"
 	"time"
@@ -21,7 +19,8 @@ type Config struct {
 }
 
 var TemplateConfig = Config{
-	Schema:           "postgres",
+	Schema:           "public",
+	Table:            "",
 	TableNameTags:    []string{"table"},
 	FieldNameTags:    []string{"pg", "postgres", "db", "sql"},
 	TaggedFieldsOnly: false, // include all fields by default
@@ -29,15 +28,17 @@ var TemplateConfig = Config{
 	PrimaryKeyTag:    "primarykey",
 }
 
-type PGClient struct {
+var FuncMap = template.FuncMap{
+	"pgtype":  GoToPGType,
+	"pgtypes": GoToPGTypes,
 }
 
-func (c *PGClient) CreateSchema(schema string) (sql.Result, error) {
-
-	return nil, errors.New("TODO")
+var TemplateData = map[string]any{
+	"Config":  TemplateConfig,
+	"TypeMap": TypeMap,
 }
 
-type Templates struct {
+type Templator struct {
 	Config        Config
 	CreateSchema  string
 	DropSchema    string
@@ -46,21 +47,16 @@ type Templates struct {
 	Get           string
 	GetMostRecent string
 	Put           string
-}
-
-func Test() {
-	s, err := meta.ToStruct(PGTemplates)
-	if err != nil {
-		panic(err)
-	}
-	s.Tags.Append("table", "test")
+	FuncMap       template.FuncMap
+	Data          map[string]any // any additional 'data' passed to templates
 }
 
 // {{- $fields := .Struct.Fields.WithTagTrue .Config.FieldNameTags -}}
 // these templates assume you use meta.Struct and overwrite members as needed
-var PGTemplates = Templates{
-	CreateSchema: `create schema if not exists {{ .Struct.LastNameSpace | tolower }}`,
-	DropSchema:   `drop schema if exists {{ .Struct.LastNameSpace | tolower }}`,
+var PGTemplates = Templator{
+	Config:       TemplateConfig,
+	CreateSchema: `create schema if not exists {{ .Config.Schema | tolower }}`,
+	DropSchema:   `drop schema if exists {{ .Config.Schema | tolower }}`,
 	CreateTable: `{{- "\n" -}}
 	CREATE TABLE IF NOT EXISTS {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }} (
 		{{- $fields := .Struct.Fields -}}
@@ -72,16 +68,34 @@ var PGTemplates = Templates{
 		{{- $columnDefs := joinslices "\t" ",\n\t" $names $types -}}
 		{{- print "\n\t" $columnDefs -}}
 		{{- $primarykeyfields := $fields.WithTagTrue .Config.PrimaryKeyTag -}}
-		{{ .Config.PrimaryKeyTag }}
-		{{ $primarykeyfields }}
 		{{- $primarykey := $primarykeyfields.TagNames .Config.FieldNameTags | join ", " -}}
 		{{- if ne $primarykey "" -}}{{- printf ",\n\tPRIMARY KEY ( %s )" $primarykey -}}{{- end -}}
 		{{- "\n)" -}}
+		
+		`,
+	DropTable: `drop table if exists {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }}`,
+	Put: `{{- "\n" -}}
+		insert into {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }} ( 
+			{{- $fields := .Struct.Fields -}}
+			{{- if .Config.TaggedFieldsOnly -}}{{- $fields = .Struct.Fields.WithTagTrue .Config.FieldNameTags -}}{{- end -}}
+			{{- $names := $fields.TagNames .Config.FieldNameTags | tolowerslices -}}
+			{{- "\n\t" -}}{{- $names | join ",\n\t" }}{{- "\n" -}}
+			values (
+				{{- "\n\t" -}}:{{- $names | join ",\n\t:" -}}
+				{{- "\n) on conflict (" -}}
+				{{- $primarykeyfields := $fields.WithTagTrue .Config.PrimaryKeyTag -}}
+				{{- $primarykeyfields.TagNames .Config.FieldNameTags | tolowerslices | join ", " -}}
+				) do nothing
 
-		{{ .Struct.Fields.WithTagTrue "pg" }}
 	`,
-	DropTable: `drop table if exists {{ .Struct.TagIdentifier .Config.TableNameTags }}`,
-	Put:       ``,
+
+	Get: `{{- "\n" -}}
+		{{ .Struct.TagIdentifier .Config.TableNameTags | tolower }}
+		{{- $fields := .Struct.Fields -}}
+		{{- if .Config.TaggedFieldsOnly -}}{{- $fields = .Struct.Fields.WithTagTrue .Config.FieldNameTags -}}{{- end -}}
+		{{- $names := $fields.TagNames .Config.FieldNameTags | tolowerslices -}}
+		{{- "\n)" -}}
+	`,
 }
 
 var XTemp string = `{{- "\n" -}}
@@ -91,13 +105,13 @@ var XTemp string = `{{- "\n" -}}
 		{{- if ne .Struct.Parent nil }}
 		inner join _tmp_{{ .Struct.Parent.TagName "table" }} ptmp
 		{{- $parentprimarykey := (index ( .Struct.Parent.Fields.WithTagTrue "primarykey" ) 0 ).TagName "db" -}}
-		{{- $parentpkey := ( index ( .Struct.Fields.WithTagTrue "parentprimarykey" ) 0  ).TagName "db" }} 
+		{{- $parentpkey := ( index ( .Struct.Fields.WithTagTrue "parentprimarykey" ) 0  ).TagName .Config.FieldNameTags | tolower }} 
 		on tmp.{{ $parentpkey }} = ptmp.{{ $parentprimarykey -}}
 		{{ end }}
 		where not exists (
 			select 1
-			from {{ .Struct.TagIdentifier "table" }} dst
-			{{- $pkey := index ( ( .Struct.Fields.WithTagTrue "primarykey" ).TagNames "db" ) 0 }}
+			from {{ .Struct.TagIdentifier "table" | tolower }} dst
+			{{- $pkey := index ( ( .Struct.Fields.WithTagTrue "primarykey" ).TagNames .Config.FieldNameTags ) 0 | tolower }}
 			where dst.{{ $pkey }} = tmp.{{ $pkey }}
 		) 
 	)
@@ -177,31 +191,67 @@ func GoToPGTypes(gotypes []string) []string {
 	return out
 }
 
-// CreateTableText builds the sql that will create a table using the predefined PGTemplates and functions
-// you can customize by editing the template or use CreateTableTextMyWay if you want to feed arguments to it
-// directly.
-func CreateTableText(value any) (string, error) {
+// These are all a work in progress. Defaults act the same and rely on the package's FuncMap, TemplateData, and TemplateConfig.
+// You can customize by modifying these.
+func DefaultCreateSchemaText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.CreateSchema, &TemplateConfig, FuncMap, nil)
+}
+
+func DefaultDropSchemaText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.DropSchema, &TemplateConfig, FuncMap, nil)
+}
+
+func DefaultCreateTableText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.CreateTable, &TemplateConfig, FuncMap, nil)
+}
+
+func DefaultDropTableText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.DropTable, &TemplateConfig, FuncMap, nil)
+}
+
+func DefaultGetText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.Get, &TemplateConfig, FuncMap, nil)
+}
+func DefaultGetMostRecentText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.GetMostRecent, &TemplateConfig, FuncMap, nil)
+}
+func DefaultPutText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.Put, &TemplateConfig, FuncMap, nil)
+}
+
+// TemplateToText is the base function for all XXXToText functions. You can expand Funcmap and TemplateData or use overrides to remove/replace them.
+func TemplateToText(value any, tpl string, cfg *Config, funcMap template.FuncMap, data map[string]any) (string, error) {
 	str, err := meta.ToStruct(value)
 	if err != nil {
 		return "", err
 	}
 
+	for k, v := range funcMap {
+		FuncMap[k] = v
+	}
+
+	for k, v := range data {
+		TemplateData[k] = v
+	}
+	tcfg := TemplateConfig
+	if cfg != nil {
+		tcfg = *cfg
+	}
+	TemplateData["Config"] = tcfg
+	// update str with any relevant config items
+	if tcfg.Schema != "" {
+		str.NameSpace = []string{tcfg.Schema}
+	}
+	if tcfg.Table != "" {
+		str.Name = tcfg.Table
+	}
+
+	TemplateData["TypeMap"] = TypeMap
+
 	return str.ExecuteTemplate(
-		PGTemplates.CreateTable,
+		tpl,
 		FuncMap,
-		map[string]any{
-			"Config":  TemplateConfig,
-			"TypeMap": TypeMap,
-		},
+		TemplateData,
 	)
-}
 
-func CreateTableTextMyWay(value any, tablename string) (string, error) {
-
-	return "", nil
-}
-
-var FuncMap = template.FuncMap{
-	"pgtype":  GoToPGType,
-	"pgtypes": GoToPGTypes,
 }
