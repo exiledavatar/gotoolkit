@@ -13,6 +13,7 @@ type Config struct {
 	Table            string // explicitly assign table, will attempt to get from TableNameTags or struct type
 	TableNameTags    []string
 	FieldNameTags    []string
+	LastInsertTags   []string // for checking the 'last insert' values in destination
 	TaggedFieldsOnly bool
 	DataTypeTag      string
 	PrimaryKeyTag    string
@@ -23,6 +24,7 @@ var TemplateConfig = Config{
 	Table:            "",
 	TableNameTags:    []string{"table"},
 	FieldNameTags:    []string{"pg", "postgres", "db", "sql"},
+	LastInsertTags:   []string{"pgli"},
 	TaggedFieldsOnly: false, // include all fields by default
 	DataTypeTag:      "pgtype",
 	PrimaryKeyTag:    "primarykey",
@@ -80,20 +82,33 @@ var PGTemplates = Templator{
 			{{- if .Config.TaggedFieldsOnly -}}{{- $fields = .Struct.Fields.WithTagTrue .Config.FieldNameTags -}}{{- end -}}
 			{{- $names := $fields.TagNames .Config.FieldNameTags | tolowerslices -}}
 			{{- "\n\t" -}}{{- $names | join ",\n\t" }}{{- "\n" -}}
-			values (
+			) values (
 				{{- "\n\t" -}}:{{- $names | join ",\n\t:" -}}
 				{{- "\n) on conflict (" -}}
 				{{- $primarykeyfields := $fields.WithTagTrue .Config.PrimaryKeyTag -}}
 				{{- $primarykeyfields.TagNames .Config.FieldNameTags | tolowerslices | join ", " -}}
 				) do nothing
-
-	`,
+				
+				`,
 
 	Get: `{{- "\n" -}}
-		{{ .Struct.TagIdentifier .Config.TableNameTags | tolower }}
-		{{- $fields := .Struct.Fields -}}
-		{{- if .Config.TaggedFieldsOnly -}}{{- $fields = .Struct.Fields.WithTagTrue .Config.FieldNameTags -}}{{- end -}}
-		{{- $names := $fields.TagNames .Config.FieldNameTags | tolowerslices -}}
+		select
+			{{- $fields := .Struct.Fields -}}
+			{{- if .Config.TaggedFieldsOnly -}}{{- $fields = .Struct.Fields.WithTagTrue .Config.FieldNameTags -}}{{- end -}}
+			{{- $names := $fields.TagNames .Config.FieldNameTags | tolowerslices -}}
+			{{- "\n\t" -}}{{- $names | join ",\n\t" }}{{- "\n" -}}
+		from
+			{{ .Struct.TagIdentifier .Config.TableNameTags | tolower }}
+		{{ if .rowlimit -}}limit {{ .rowlimit }}{{- end }}
+		{{- "\n)" -}}
+		`,
+	GetMostRecent: `{{- "\n" -}}
+		select
+			{{- $fields := .Struct.Fields.WithTagTrue .Config.LastInsertTags -}}
+			{{- names := $fields.NonEmptyTagValues .Config.LastInsertTags -}}
+			{{- "\n\t" -}}{{- $names | join ",\n\t" }}{{- "\n" -}}
+		from
+			{{ .Struct.TagIdentifier .Config.TableNameTags | tolower }}
 		{{- "\n)" -}}
 	`,
 }

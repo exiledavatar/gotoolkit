@@ -204,3 +204,19 @@ func TestZ(t *testing.T) {
 		// fmt.Printf("%#v\n", data)
 	})
 }
+
+func TestZZZZZZZZZZZZZZZZZZZZZZZZZZZZzFieldsWithTagTrue(t *testing.T) {
+	fmt.Println("final")
+	str, err := meta.ToStruct(structExample)
+	if err != nil {
+		log.Println(err)
+
+	}
+	fmt.Println("=========================================")
+	fields := str.Fields().WithTagTrue("db")
+	fmt.Println(len(fields))
+	for _, f := range fields {
+		fmt.Printf("%#v\n\n", f)
+	}
+	fmt.Println("------------")
+}
