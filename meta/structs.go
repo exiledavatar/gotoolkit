@@ -2,7 +2,7 @@ package meta
 
 type Structs []Struct
 
-func ToStructs[S []T, T any](value S) Structs {
+func ToStructs[S ~[]T, T any](value S) Structs {
 	var s Structs
 	for _, v := range value {
 		str, err := ToStruct(v)
