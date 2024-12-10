@@ -41,16 +41,18 @@ var TemplateData = map[string]any{
 }
 
 type Templator struct {
-	Config        Config
-	CreateSchema  string
-	DropSchema    string
-	CreateTable   string
-	DropTable     string
-	Get           string
-	GetMostRecent string
-	Put           string
-	FuncMap       template.FuncMap
-	Data          map[string]any // any additional 'data' passed to templates
+	Config          Config
+	CreateSchema    string
+	DropSchema      string
+	CreateTable     string
+	CreateTempTable string
+	DropTable       string
+	Get             string
+	GetMostRecent   string
+	Put             string
+	PutTempToTable  string
+	FuncMap         template.FuncMap
+	Data            map[string]any // any additional 'data' passed to templates
 }
 
 // {{- $fields := .Struct.Fields.WithTagTrue .Config.FieldNameTags -}}
@@ -75,6 +77,11 @@ var PGTemplates = Templator{
 		{{- "\n)" -}}
 		
 		`,
+	CreateTempTable: `
+		create temp table _tmp_{{ .Struct.TagName .Config.TableNameTags | tolower }} (
+		like {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }}
+		excluding constraints ) 
+		`,
 	DropTable: `drop table if exists {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }}`,
 	Put: `{{- "\n" -}}
 		insert into {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }} ( 
@@ -88,9 +95,13 @@ var PGTemplates = Templator{
 				{{- $primarykeyfields := $fields.WithTagTrue .Config.PrimaryKeyTag -}}
 				{{- $primarykeyfields.TagNames .Config.FieldNameTags | tolowerslices | join ", " -}}
 				) do nothing
-				
 				`,
-
+	PutTempToTable: `{{- "\n" -}}
+	insert into {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }} (
+	select distinct on ( tmp._id_hash ) tmp.*
+	from _tmp_{{ {{ .Struct.TagName .Config.TableNameTags | tolower }}}} tmp 	
+	) on conflict ( _id_hash ) do nothing
+`,
 	Get: `{{- "\n" -}}
 		select
 			{{- $fields := .Struct.Fields -}}
@@ -218,6 +229,10 @@ func DefaultDropSchemaText(value any) (string, error) {
 
 func DefaultCreateTableText(value any) (string, error) {
 	return TemplateToText(value, PGTemplates.CreateTable, &TemplateConfig, FuncMap, nil)
+}
+
+func DefaultCreateTempTableText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.CreateTempTable, &TemplateConfig, FuncMap, nil)
 }
 
 func DefaultDropTableText(value any) (string, error) {
