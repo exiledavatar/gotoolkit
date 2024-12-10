@@ -97,11 +97,19 @@ var PGTemplates = Templator{
 				) do nothing
 				`,
 	PutTempToTable: `{{- "\n" -}}
-	insert into {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }} (
-	select distinct on ( tmp._id_hash ) tmp.*
-	from _tmp_{{ {{ .Struct.TagName .Config.TableNameTags | tolower }}}} tmp 	
-	) on conflict ( _id_hash ) do nothing
-`,
+		{{- $primarykeyfields := .Struct.Fields.WithTagTrue .Config.PrimaryKeyTag -}}
+		{{- $primarykey := $primarykeyfields.TagNames .Config.FieldNameTags | join ", " -}}
+
+		insert into {{ .Struct.TagIdentifier .Config.TableNameTags | tolower }} (
+		select distinct 
+		{{- if $primarykeyfields }}
+		{{- $pkey := $primarykeyfields.TagNames .Config.FieldNameTags | join ", tmp." -}}
+		{{ "" }} on ( tmp.{{ $pkey }} ) 
+		{{- end }}		
+		tmp.*
+		from _tmp_{{ .Struct.TagName .Config.TableNameTags | tolower }} tmp 	
+		) {{ if $primarykey }} on conflict ( {{ $primarykey }} ) do nothing{{ end }}
+		`,
 	Get: `{{- "\n" -}}
 		select
 			{{- $fields := .Struct.Fields -}}
@@ -247,6 +255,9 @@ func DefaultGetMostRecentText(value any) (string, error) {
 }
 func DefaultPutText(value any) (string, error) {
 	return TemplateToText(value, PGTemplates.Put, &TemplateConfig, FuncMap, nil)
+}
+func DefaultPutTempToTableText(value any) (string, error) {
+	return TemplateToText(value, PGTemplates.PutTempToTable, &TemplateConfig, FuncMap, nil)
 }
 
 // TemplateToText is the base function for all XXXToText functions. You can expand Funcmap and TemplateData or use overrides to remove/replace them.

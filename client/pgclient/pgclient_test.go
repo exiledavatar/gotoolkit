@@ -33,8 +33,14 @@ func Test(t *testing.T) {
 	fmt.Println(pgclient.DefaultCreateSchemaText(structTest))
 	fmt.Println(pgclient.DefaultDropSchemaText(structTest))
 	fmt.Println(pgclient.DefaultCreateTableText(structTest))
+	fmt.Println(pgclient.DefaultCreateTempTableText(structTest))
 	fmt.Println(pgclient.DefaultDropTableText(structTest))
 	fmt.Println(pgclient.DefaultGetText(structTest))
 	fmt.Println(pgclient.DefaultGetMostRecentText(structTest))
 	fmt.Println(pgclient.DefaultPutText(structTest))
+	fmt.Println(pgclient.DefaultPutTempToTableText(structTest))
+
+	// struct slice test
+	fmt.Println(pgclient.DefaultCreateTableText([]StructTest{structTest}))
+
 }
